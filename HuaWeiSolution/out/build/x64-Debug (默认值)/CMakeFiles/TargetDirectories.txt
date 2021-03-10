@@ -1,0 +1,5 @@
+C:/Users/Administrator/source/repos/bbb-x1/HuaWei/HuaWeiSolution/out/build/x64-Debug (默认值)/CMakeFiles/edit_cache.dir
+C:/Users/Administrator/source/repos/bbb-x1/HuaWei/HuaWeiSolution/out/build/x64-Debug (默认值)/CMakeFiles/rebuild_cache.dir
+C:/Users/Administrator/source/repos/bbb-x1/HuaWei/HuaWeiSolution/out/build/x64-Debug (默认值)/HuaWeiSolution/CMakeFiles/HuaWeiSolution.dir
+C:/Users/Administrator/source/repos/bbb-x1/HuaWei/HuaWeiSolution/out/build/x64-Debug (默认值)/HuaWeiSolution/CMakeFiles/edit_cache.dir
+C:/Users/Administrator/source/repos/bbb-x1/HuaWei/HuaWeiSolution/out/build/x64-Debug (默认值)/HuaWeiSolution/CMakeFiles/rebuild_cache.dir
