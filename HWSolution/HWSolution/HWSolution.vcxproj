@@ -22,6 +22,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\input.cpp" />
     <ClCompile Include="src\server.cpp" />
+    <ClCompile Include="src\virtualMachine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\input.h" />
