@@ -3,7 +3,10 @@
 #
 cmake_minimum_required (VERSION 3.8)
 
+# 添加头文件搜索路径
+include_directories(include)
+
 # 将源代码添加到此项目的可执行文件。
-add_executable (HuaWeiSolution "HuaWeiSolution.cpp" "HuaWeiSolution.h")
+add_executable (HuaWeiSolution "main.cpp" "src/server.cpp")
 
 # TODO: 如有需要，请添加测试并安装目标。
