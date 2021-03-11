@@ -16,6 +16,7 @@ unordered_map<string, ServerInfo> server_infos;
 // 虚拟机信息
 unordered_map<string, VirtualMachineInfo> vm_infos;
 
+
 // 已购买的服务器
 int server_number = 0;
 unordered_map<int, Server> server_resources;
@@ -24,18 +25,17 @@ unordered_map<int, Server> server_resources;
 vector<ServerInfo> server_runs;
 // TODO: 当前运行虚拟机
 
+// 全部请求序列
+unordered_map<int, vector<Request>> requests_set;
+
 // 成本
 long long BUYCOST = 0, POWERCOST = 0, TOTALCOST = 0;
 
 
 int main(int argc, char **argv){
 
-	unordered_map<string, ServerInfo> server_info;
-	unordered_map<string, VMInfo> vm_infos;
-	unordered_map<int, vector<Request>> requests_set;
-
 	//初始化数据
-	InitialzieData(server_info, vm_infos, requests_set);
+	InitialzieData(server_infos, vm_infos, requests_set);
 
 	//统计数据
 	StatisticInfo(vm_infos, requests_set);
