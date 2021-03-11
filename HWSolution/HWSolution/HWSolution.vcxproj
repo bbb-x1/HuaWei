@@ -28,6 +28,10 @@
     <ClInclude Include="include\server.h" />
     <ClInclude Include="include\virtualMachine.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="resource\training-1.txt" />
+    <Text Include="resource\training-2.txt" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

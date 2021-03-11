@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include "../include/input.h"
 #include "../include/server.h"
+#include "../include/virtualMachine.h"
 using namespace std;
 
 // 生成1条服务器信息
@@ -30,11 +31,7 @@ ServerInfo GenerateServerInfo(string cpu_cores, string mem_size,
 
 
 // 生成服务器信息表
-void InputServerInfos(string file_path, unordered_map<string, ServerInfo>& server_infos) {
-	// 输入重定向
-	FILE* stream1;
-	freopen_s(&stream1, file_path.c_str(), "rb", stdin);
-	
+void InputServerInfos(unordered_map<string, ServerInfo>& server_infos) {
 	int server_info_num;
 	string server_type, cpu_cores, mem_size, buy_cost, power_cost;
 	scanf_s("%d", &server_info_num);
@@ -60,4 +57,52 @@ void PrintServerInfos(unordered_map<string, ServerInfo>& server_infos) {
 	for (iter = server_infos.begin(); iter != server_infos.end(); iter++)
 		cout << iter->first << "\t" << iter->second.cpu << "\t" << iter->second.mem <<
 		"\t" << iter->second.buy_cost << "\t" << iter->second.day_power_cost << endl;
+}
+
+
+// 生成1条虚拟机信息
+VMInfo GenerateVMInfo(string cpu_cores, string mem_size, string dual_node) {
+	VMInfo vm;
+	// 存储cpu核数
+	for (int i = 0; i < cpu_cores.size() - 1; i++) {
+		vm.cpu = 10 * vm.cpu + cpu_cores[i] - '0';
+	}
+	// 存储内存大小
+	for (int i = 0; i < mem_size.size() - 1; i++) {
+		vm.mem = 10 * vm.mem + mem_size[i] - '0';
+	}
+	// 是否双节点
+	vm.dual_node = dual_node[0] - '0';
+
+	return vm;
+}
+
+
+// 生成虚拟机信息表
+void InputVMInfos(unordered_map<string, VMInfo>& vm_infos) {
+	int vm_info_num;
+	string vm_type, cpu_cores, mem_size, dual_node;
+	scanf_s("%d", &vm_info_num);
+
+	for (int i = 0; i < vm_info_num; i++) {
+		cin >> vm_type >> cpu_cores >> mem_size >> dual_node;
+		// 存储型号
+		string _vm_type = "";
+		for (int i = 1; i < vm_type.size() - 1; i++) {
+			_vm_type += vm_type[i];
+		}
+		// 存储服务器信息结构体
+		VMInfo vm = GenerateVMInfo(cpu_cores, mem_size, dual_node);
+		vm_infos[_vm_type] = vm;
+	}
+}
+
+
+// 遍历输出服务器信息表
+void PrintVMInfos(unordered_map<string, VMInfo>&vm_infos) {
+	cout << vm_infos.size() << endl;
+	unordered_map<string, VMInfo>::iterator iter;
+	for (iter = vm_infos.begin(); iter != vm_infos.end(); iter++)
+		cout << iter->first << "\t" << iter->second.cpu << "\t" << iter->second.mem <<
+		"\t" << iter->second.dual_node<< endl;
 }
