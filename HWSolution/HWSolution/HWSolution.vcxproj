@@ -25,6 +25,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\input.h" />
+    <ClInclude Include="include\Request.h" />
     <ClInclude Include="include\server.h" />
     <ClInclude Include="include\virtualMachine.h" />
   </ItemGroup>

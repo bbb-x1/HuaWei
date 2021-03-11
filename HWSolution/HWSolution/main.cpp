@@ -29,16 +29,16 @@ long long BUYCOST = 0, POWERCOST = 0, TOTALCOST = 0;
 
 
 int main(int argc, char **argv){
-	// 输入重定向
-	FILE* stream1;
-	freopen_s(&stream1, kFilePath.c_str(), "rb", stdin);
 
-	InputServerInfos(server_infos);
-	PrintServerInfos(server_infos);
+	unordered_map<string, ServerInfo> server_info;
+	unordered_map<string, VMInfo> vm_infos;
+	unordered_map<int, vector<Request>> requests_set;
 
-	InputVMInfos(vm_infos);
-	PrintVMInfos(vm_infos);
+	//初始化数据
+	InitialzieData(server_info, vm_infos, requests_set);
 
-	fclose(stdin);
+	//统计数据
+	StatisticInfo(vm_infos, requests_set);
+	system("pause");
 	return 0;
 }

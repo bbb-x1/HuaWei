@@ -35,6 +35,9 @@
     <ClInclude Include="include\virtualMachine.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="include\Request.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="resource\training-1.txt">
