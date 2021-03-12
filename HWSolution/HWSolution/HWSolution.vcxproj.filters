@@ -24,7 +24,7 @@
     <ClCompile Include="src\server.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\virtualMachine.cpp">
+    <ClCompile Include="src\vm.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,10 +35,10 @@
     <ClInclude Include="include\server.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="include\virtualMachine.h">
+    <ClInclude Include="include\vm.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="include\Request.h">
+    <ClInclude Include="include\request.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -22,13 +22,13 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\input.cpp" />
     <ClCompile Include="src\server.cpp" />
-    <ClCompile Include="src\virtualMachine.cpp" />
+    <ClCompile Include="src\vm.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\input.h" />
-    <ClInclude Include="include\Request.h" />
+    <ClInclude Include="include\request.h" />
     <ClInclude Include="include\server.h" />
-    <ClInclude Include="include\virtualMachine.h" />
+    <ClInclude Include="include\vm.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="resource\training-1.txt" />

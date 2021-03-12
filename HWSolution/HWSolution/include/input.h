@@ -4,8 +4,8 @@
 #include<queue>
 #include <unordered_map>
 #include "server.h"
-#include "virtualMachine.h"
-#include "Request.h"
+#include "vm.h"
+#include "request.h"
 using namespace std;
 
 void split(const string& s, vector<string>& tokens, const string& delimiters = " ");

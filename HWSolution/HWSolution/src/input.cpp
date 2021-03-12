@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include "../include/input.h"
 #include "../include/server.h"
-#include "../include/virtualMachine.h"
+#include "../include/vm.h"
 using namespace std;
 
 /**
