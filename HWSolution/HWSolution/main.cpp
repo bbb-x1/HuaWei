@@ -40,7 +40,7 @@ long long BUYCOST = 0, POWERCOST = 0, TOTALCOST = 0;
 int main(int argc, char **argv){
 
 	//初始化数据
-	InitialzieData(server_infos, vm_infos, requests_set);
+	InitializeData(server_infos, vm_infos, requests_set);
 	// 打印服务器信息
 	PrintServerInfos(server_infos);
 	// 打印虚拟机信息
