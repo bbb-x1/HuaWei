@@ -28,7 +28,22 @@ void VM::add(string svStr_, int svID_, Server target,VirtualMachineInfo vm_info,
     svID = svID_;
     svNode = svNode_;
 
-    target.IncreaseUse(vm_info.cpu, vm_info.mem, vm_info.cpu + 'A');
-    
+    if (vm_info.dual_node == 0) {
+        target.IncreaseUse(vm_info.cpu, vm_info.mem, svNode +'A');
+    }
+    else {
+        target.IncreaseUse(vm_info.cpu, vm_info.mem, 'A');
+        target.IncreaseUse(vm_info.cpu, vm_info.mem, 'B');
+    }
+}
 
+
+void VM::del(Server target, VirtualMachineInfo vm_info) {
+    if (vm_info.dual_node == 0) {
+        target.DecreaseUse(vm_info.cpu, vm_info.mem, svNode + 'A');
+    }
+    else {
+        target.DecreaseUse(vm_info.cpu, vm_info.mem, 'A');
+        target.DecreaseUse(vm_info.cpu, vm_info.mem, 'B');
+    }
 }

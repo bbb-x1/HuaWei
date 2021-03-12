@@ -22,6 +22,7 @@ private:
 
 public:
     void add(string svStr_, int svID, Server target,VirtualMachineInfo vm_info, int svNode = -1);   //将虚拟机加到服务器
+    void del(Server target, VirtualMachineInfo vm_info);
 
     void pCreatRequest();   //输出创建请求的部署情况
     void pMigration();      //输出该虚拟机迁移情况
