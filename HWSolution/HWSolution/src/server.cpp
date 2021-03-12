@@ -19,15 +19,15 @@ Server::Server(string type, int ID, int cpu, int mem) {
 
 
 // 开机
-void Server::_Open(unordered_map<int, Server> server_runs,
-	unordered_map<int, Server> server_closes) {
+void Server::_Open(unordered_map<int, Server>& server_runs,
+	unordered_map<int, Server>& server_closes) {
 	server_runs[this->ID_] = *this;
 	server_closes.erase(this->ID_);
 }
 
 // 关机
-void Server::_Close(unordered_map<int, Server> server_runs,
-	unordered_map<int, Server> server_closes) {
+void Server::_Close(unordered_map<int, Server>& server_runs,
+	unordered_map<int, Server>& server_closes) {
 	server_closes[this->ID_] = *this;
 	server_runs.erase(this->ID_);
 }
@@ -35,8 +35,8 @@ void Server::_Close(unordered_map<int, Server> server_runs,
 
 // 增加服务器负载
 int Server::IncreaseUse(int cpu, int mem, char node, 
-	unordered_map<int, Server> server_runs,
-	unordered_map<int, Server> server_closes) {
+	unordered_map<int, Server>& server_runs,
+	unordered_map<int, Server>& server_closes) {
 	// 增加负载前服务器空，则开机
 	if (this->a->cpu_used == 0 && this->a->mem_used == 0
 		&& this->b->cpu_used == 0 && this->b->mem_used == 0)
@@ -63,8 +63,8 @@ int Server::IncreaseUse(int cpu, int mem, char node,
 
 // 减少服务器负载
 int Server::DecreaseUse(int cpu, int mem, char node,
-	unordered_map<int, Server> server_runs,
-	unordered_map<int, Server> server_closes) {
+	unordered_map<int, Server>& server_runs,
+	unordered_map<int, Server>& server_closes) {
 	if (node == 'a') {
 		this->a->cpu_res += cpu;
 		this->a->cpu_used -= cpu;  // 增加剩余，减少使用

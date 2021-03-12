@@ -25,17 +25,17 @@ private:
 	Node* a;  // 节点a
 	Node* b;  // 节点b
 	// 开机
-	void _Open(unordered_map<int, Server> server_runs,unordered_map<int, Server> server_closes);
+	void _Open(unordered_map<int, Server>& server_runs,unordered_map<int, Server>& server_closes);
 	// 关机
-	void _Close(unordered_map<int, Server> server_runs, unordered_map<int, Server> server_closes);
+	void _Close(unordered_map<int, Server>& server_runs, unordered_map<int, Server>& server_closes);
 public:
 	Server();
 	Server(string type, int ID, int cpu, int mem);  // 初始化节点a, b
 	string type_;  // 服务器型号
-	int IncreaseUse(int cpu, int mem, char node, unordered_map<int, Server> server_runs,
-		unordered_map<int, Server> server_closes);  // 增加服务器负载
-	int DecreaseUse(int cpu, int mem, char node, unordered_map<int, Server> server_runs,
-		unordered_map<int, Server> server_closes);  // 减少服务器负载
+	int IncreaseUse(int cpu, int mem, char node, unordered_map<int, Server>& server_runs,
+		unordered_map<int, Server>& server_closes);  // 增加服务器负载
+	int DecreaseUse(int cpu, int mem, char node, unordered_map<int, Server>& server_runs,
+		unordered_map<int, Server>& server_closes);  // 减少服务器负载
 	Node get_node(char node);  // 获取节点状态
 };
 
