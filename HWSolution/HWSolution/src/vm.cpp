@@ -1,5 +1,12 @@
 #include "../include/vm.h"
 
+VM::VM() {}
+
+VM::VM(int vm_id, string vm_str) {
+    vm_id_ = vm_id;
+    vm_str_ = vm_str;
+
+}
 
 void VM::PCreatRequest(){
     if(svNode == -1){
@@ -11,9 +18,9 @@ void VM::PCreatRequest(){
 
 void VM::PMigration(){
     if(svNode == -1){
-        cout<<'('<<vMID<<','<<sv_id_<<')'<<endl;
+        cout<<'('<<vm_id_<<','<<sv_id_<<')'<<endl;
     }else{
-        cout<<'('<<vMID<<','<<sv_id_<<','<< 'A' + svNode <<')'<<endl;
+        cout<<'('<<vm_id_<<','<<sv_id_<<','<< 'A' + svNode <<')'<<endl;
     }
 }
 
