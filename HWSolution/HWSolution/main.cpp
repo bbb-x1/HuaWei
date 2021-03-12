@@ -5,6 +5,7 @@
 #include "include/server.h"
 #include "include/input.h"
 #include "include/vm.h"
+#include "include/request.h"
 using namespace std;
 
 
@@ -22,8 +23,12 @@ int server_number = 0;
 unordered_map<int, Server> server_resources;
 
 // 当前开机服务器
-vector<Server> server_runs;
-// TODO: 当前运行虚拟机
+unordered_map<int, Server> server_runs;
+// 当前关机服务器
+unordered_map<int, Server> server_closes;
+
+// 当前开机虚拟机
+unordered_map<int, VM> vm_runs;
 
 // 全部请求序列
 unordered_map<int, vector<Request>> requests_set;

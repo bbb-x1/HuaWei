@@ -1,5 +1,10 @@
 #include "../include/server.h"
 
+Server::Server() {
+
+}
+
+
 Server::Server(string type, int ID, int cpu, int mem) {
 	this->type_ = type;  // 服务器型号
 	this->ID_ = ID;
@@ -54,6 +59,15 @@ int Server::DecreaseUse(int cpu, int mem, char node) {
 		return -1;
 	}
 	return 0;
+}
+
+
+// 获取节点状态
+Node Server::get_node(char node) {
+	if (node == 'a') {
+		return *this->a;
+	}
+	return *this->b;
 }
 
 
