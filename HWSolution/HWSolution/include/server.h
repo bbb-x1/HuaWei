@@ -30,3 +30,4 @@ public:
 	int DecreaseUse(int cpu, int mem, char node);  // 减少服务器负载
 };
 
+void PurchaseServer(string server_str);
