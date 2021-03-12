@@ -3,9 +3,9 @@
 
 void VM::pCreatRequest(){
     if(svNode == -1){
-        cout<<'('<<svID<<')'<<endl;
+        cout<<'('<<sv_id_<<')'<<endl;
     }else{
-        cout<<'('<<svID<<','<<'A'+svNode<<')'<<endl;
+        cout<<'('<<sv_id_<<','<<'A'+svNode<<')'<<endl;
     }
 
 }
@@ -13,14 +13,14 @@ void VM::pCreatRequest(){
 
 void VM::pMigration(){
     if(svNode == -1){
-        cout<<'('<<vMID<<','<<svID<<')'<<endl;
+        cout<<'('<<vMID<<','<<sv_id<<')'<<endl;
     }else{
-        cout<<'('<<vMID<<','<<svID<<','<< 'A' + svNode <<')'<<endl;
+        cout<<'('<<vMID<<','<<sv_id<<','<< 'A' + svNode <<')'<<endl;
     }
 }
 
 
-//void VM::add(string svStr_, int svID_, Server target,VirtualMachineInfo vm_info, int svNode_){
+//void VM::add(int sv){
 //    svStr = svStr_;
 //    svID = svID_;
 //    svNode = svNode_;
@@ -44,3 +44,4 @@ void VM::pMigration(){
 //        target.DecreaseUse(vm_info.cpu, vm_info.mem, 'B');
 //    }
 //}
+

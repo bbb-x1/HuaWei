@@ -51,10 +51,3 @@ int main(int argc, char **argv){
 	return 0;
 }
 
-void PurchaseServer(string server_str) {
-	Server purchase_server(server_str,server_number, server_infos[server_str].cpu, server_infos[server_str].mem);
-	server_resources.insert({ server_number, purchase_server });
-	++server_number;
-	BUYCOST += server_infos[server_str].buy_cost;
-	TOTALCOST += server_infos[server_str].buy_cost;
-}
