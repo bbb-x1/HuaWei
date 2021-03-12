@@ -46,7 +46,7 @@ int main(int argc, char **argv){
 	// 打印虚拟机信息
 	PrintVMInfos(vm_infos);
 	//统计数据
-	StatisticInfo(vm_infos, requests_set);
+	StatisticInfo(vm_infos, vm_runs, requests_set);
 	system("pause");
 	return 0;
 }

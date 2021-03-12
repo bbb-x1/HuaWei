@@ -115,12 +115,12 @@ void InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_m
 			{
 				r.op_type = ADD;
 				r.vm_type = tokens[1];
-				r.vm_id = tokens[2];
+				r.vm_id = atoi(tokens[2].c_str());
 			}
 			else
 			{
 				r.op_type = DELETE;
-				r.vm_id = tokens[1];
+				r.vm_id = atoi(tokens[1].c_str());
 				r.vm_type = "NAN";
 			}
 			queue_requests.push_back(r);
@@ -130,34 +130,59 @@ void InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_m
 }
 
 
-void StatisticInfo(unordered_map<string, VMInfo>& vm_infos, unordered_map<int, vector<Request>>& requests_set)
+void StatisticInfo(unordered_map<string, VMInfo>& vm_infos, unordered_map<int, VM> vm_runs,unordered_map<int, vector<Request>>& requests_set)
 {
 	unordered_map<int, int> capacitys_cpu_set;
 	unordered_map<int, int> capacitys_mem_set;
+	int last_day_cpu = 0, last_day_mem = 0;
 	for (auto it = requests_set.cbegin(); it != requests_set.cend(); it++)
 	{
 		vector<Request> vr = it->second;
 		for (int i = 0; i < vr.size(); i++)
 		{
-			capacitys_cpu_set[it->first] += vm_infos[vr[i].vm_type].cpu;
-			capacitys_mem_set[it->first] += vm_infos[vr[i].vm_type].mem;
+			//申请虚拟机
+			if (vr[i].op_type == ADD)
+			{
+				VM vm;
+				vm.vm_id_ = vr[i].vm_id;
+				vm.vm_str_ = vr[i].vm_type;
+				vm_runs[vm.vm_id_] = vm;
+				capacitys_cpu_set[it->first] += vm_infos[vr[i].vm_type].cpu;
+				capacitys_mem_set[it->first] += vm_infos[vr[i].vm_type].mem;
+			}
+			else  //删除虚拟机
+			{
+				capacitys_cpu_set[it->first] -= vm_infos[vm_runs[vr[i].vm_id].vm_str_].cpu;
+				capacitys_mem_set[it->first] -= vm_infos[vm_runs[vr[i].vm_id].vm_str_].mem;
+			}
 		}
+		capacitys_cpu_set[it->first] += last_day_cpu;
+		capacitys_mem_set[it->first] += last_day_mem;
+		last_day_cpu = capacitys_cpu_set[it->first];
+		last_day_mem = capacitys_mem_set[it->first];
 	}
 	int cpu_max = -1, mem_max = -1;
+	int cpu_max_day = 0, mem_max_day = 0;
 	cout << "CPU需求" << endl;
 	for (auto it = capacitys_cpu_set.cbegin(); it != capacitys_cpu_set.cend(); it++)
 	{
 		if (it->second > cpu_max)
+		{
 			cpu_max = it->second;
-		cout << "第" << it->first << "天," << "CPU需求量为" << it->second << endl;
+			cpu_max_day = it->first+1;
+		}
+		cout << "第" << it->first+1 << "天," << "CPU需求量为" << it->second << endl;
 	}
 	cout << "内存需求" << endl;
 	for (auto it = capacitys_mem_set.cbegin(); it != capacitys_mem_set.cend(); it++)
 	{
 		if (it->second > mem_max)
+		{
 			mem_max = it->second;
-		cout << "第" << it->first << "天," << "内存需求量为" << it->second << endl;
+			mem_max_day = it->first+1;
+		}
+		cout << "第" << it->first+1 << "天," << "内存需求量为" << it->second << endl;
 	}
-	cout << "CPU需求量最大为:" << cpu_max << endl;
-	cout << "内存需求量最大为:" << mem_max << endl;
+	cout << "CPU需求量最大为:" << cpu_max <<",为第"<<cpu_max_day<<"天"<< endl;
+	cout << "内存需求量最大为:" << mem_max << ",为第" << mem_max_day << "天" << endl;
 }

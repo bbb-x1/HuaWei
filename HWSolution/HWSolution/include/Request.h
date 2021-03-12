@@ -9,5 +9,5 @@ typedef struct Request
 {
 	OPTYPE op_type;
 	std::string vm_type;
-	std::string vm_id;
+	int vm_id;
 }Request;
