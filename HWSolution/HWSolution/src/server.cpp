@@ -1,5 +1,10 @@
 #include "../include/server.h"
 
+Server::Server() {
+
+}
+
+
 Server::Server(string type, int ID, int cpu, int mem) {
 	this->type_ = type;  // 服务器型号
 	this->ID_ = ID;
@@ -13,8 +18,29 @@ Server::Server(string type, int ID, int cpu, int mem) {
 }
 
 
+// 开机
+void Server::_Open(unordered_map<int, Server> server_runs,
+	unordered_map<int, Server> server_closes) {
+	server_runs[this->ID_] = *this;
+	server_closes.erase(this->ID_);
+}
+
+// 关机
+void Server::_Close(unordered_map<int, Server> server_runs,
+	unordered_map<int, Server> server_closes) {
+	server_closes[this->ID_] = *this;
+	server_runs.erase(this->ID_);
+}
+
+
 // 增加服务器负载
-int Server::IncreaseUse(int cpu, int mem, char node) {
+int Server::IncreaseUse(int cpu, int mem, char node, 
+	unordered_map<int, Server> server_runs,
+	unordered_map<int, Server> server_closes) {
+	// 增加负载前服务器空，则开机
+	if (this->a->cpu_used == 0 && this->a->mem_used == 0
+		&& this->b->cpu_used == 0 && this->b->mem_used == 0)
+		_Open(server_runs, server_closes);
 	if (node == 'a') {
 		this->a->cpu_res -= cpu;
 		this->a->cpu_used += cpu;  // 减少剩余，增加使用
@@ -36,7 +62,9 @@ int Server::IncreaseUse(int cpu, int mem, char node) {
 
 
 // 减少服务器负载
-int Server::DecreaseUse(int cpu, int mem, char node) {
+int Server::DecreaseUse(int cpu, int mem, char node,
+	unordered_map<int, Server> server_runs,
+	unordered_map<int, Server> server_closes) {
 	if (node == 'a') {
 		this->a->cpu_res += cpu;
 		this->a->cpu_used -= cpu;  // 增加剩余，减少使用
@@ -53,7 +81,20 @@ int Server::DecreaseUse(int cpu, int mem, char node) {
 		std::cout << "节点使用错误！" << std::endl;
 		return -1;
 	}
+	// 减少负载后服务器空，则关机
+	if (this->a->cpu_used == 0 && this->a->mem_used == 0
+		&& this->b->cpu_used == 0 && this->b->mem_used == 0)
+		_Close(server_runs, server_closes);
 	return 0;
+}
+
+
+// 获取节点状态
+Node Server::get_node(char node) {
+	if (node == 'a') {
+		return *this->a;
+	}
+	return *this->b;
 }
 
 

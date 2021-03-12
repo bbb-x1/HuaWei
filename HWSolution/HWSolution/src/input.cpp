@@ -143,7 +143,6 @@ void InitialzieData(unordered_map<string, ServerInfo>& server_infos, unordered_m
 			}
 			queue_requests.push_back(r);
 		}
-		cout << "test" << endl;
 		requests_set[i] = queue_requests;
 	}
 }
