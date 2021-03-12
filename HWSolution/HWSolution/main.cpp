@@ -22,7 +22,7 @@ int server_number = 0;
 unordered_map<int, Server> server_resources;
 
 // 当前开机服务器
-vector<ServerInfo> server_runs;
+vector<Server> server_runs;
 // TODO: 当前运行虚拟机
 
 // 全部请求序列
@@ -42,3 +42,4 @@ int main(int argc, char **argv){
 	system("pause");
 	return 0;
 }
+

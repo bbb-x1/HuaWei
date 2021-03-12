@@ -1,6 +1,7 @@
 #include "../include/server.h"
 
-Server::Server(int ID, int cpu, int mem) {
+Server::Server(string type, int ID, int cpu, int mem) {
+	this->type_ = type;  // 服务器型号
 	this->ID_ = ID;
 	int node_cpu = cpu / 2;  // 每个节点的cpu
 	int node_mem = mem / 2;  // 每个节点的内存
@@ -54,3 +55,5 @@ int Server::DecreaseUse(int cpu, int mem, char node) {
 	}
 	return 0;
 }
+
+
