@@ -35,7 +35,7 @@ long long BUYCOST = 0, POWERCOST = 0, TOTALCOST = 0;
 int main(int argc, char **argv){
 
 	//初始化数据
-	InitializeData(server_infos, vm_infos, requests_set);
+	InitialzieData(server_infos, vm_infos, requests_set);
 
 	//统计数据
 	StatisticInfo(vm_infos, requests_set);
