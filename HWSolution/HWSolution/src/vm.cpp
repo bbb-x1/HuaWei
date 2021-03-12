@@ -1,28 +1,25 @@
 #include "../include/vm.h"
 
 
-//void VM::pCreatRequest(){
-//    if(svNode == -1){
-//        cout<<'('<<sv_id_<<')'<<endl;
-//    }else{
-//        cout<<'('<<sv_id_<<','<<'A'+svNode<<')'<<endl;
-//    }
-//
-//}
-//
-//
-//void VM::pMigration(){
-//    if(svNode == -1){
-//        cout<<'('<<vMID<<','<<sv_id<<')'<<endl;
-//    }else{
-//        cout<<'('<<vMID<<','<<sv_id<<','<< 'A' + svNode <<')'<<endl;
-//    }
-//}
+void VM::PCreatRequest(){
+    if(svNode == -1){
+        cout<<'('<<sv_id_<<')'<<endl;
+    }else{
+        cout<<'('<<sv_id_<<','<<'A'+svNode<<')'<<endl;
+    }
+}
+
+void VM::PMigration(){
+    if(svNode == -1){
+        cout<<'('<<vMID<<','<<sv_id_<<')'<<endl;
+    }else{
+        cout<<'('<<vMID<<','<<sv_id_<<','<< 'A' + svNode <<')'<<endl;
+    }
+}
 
 
-//void VM::add(int sv){
-//    svStr = svStr_;
-//    svID = svID_;
+//void VM::add(int sv_id){
+//    sv_id_ = sv_id_;
 //    svNode = svNode_;
 //
 //    if (vm_info.dual_node == 0) {

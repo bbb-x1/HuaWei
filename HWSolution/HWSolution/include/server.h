@@ -39,4 +39,4 @@ public:
 	Node get_node(char node);  // 获取节点状态
 };
 
-void PurchaseServer(string server_str);
+void PurchaseServer(string& server_str, int& server_number, unordered_map<string, ServerInfo>& server_infos, unordered_map<int, Server>& server_resources, int& BUYCOST, int& TOTALCOST);
