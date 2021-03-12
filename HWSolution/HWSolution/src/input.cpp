@@ -12,7 +12,7 @@ using namespace std;
  * @param tokens 分割后字符串集合
  * @param delimiters 分割符/分割字符串
 */
-void split(const string& s, vector<string>& tokens, const string& delimiters)
+void Split(const string& s, vector<string>& tokens, const string& delimiters)
 {
 	string::size_type lastPos = s.find_first_not_of(delimiters, 0);
 	string::size_type pos = s.find_first_of(delimiters, lastPos);
@@ -30,58 +30,12 @@ void split(const string& s, vector<string>& tokens, const string& delimiters)
  * @param brace 多余字符串
  * @return 处理后的字符串
 */
-string trim(string s, string brace) {
+string Trim(string s) {
 	if (s.empty())
 		return s;
-	s.erase(0, s.find_first_not_of(brace));
-	s.erase(s.find_last_not_of(brace) + 1);
+	s = s.substr(1, s.length() - 2);
 	return s;
 }
-
-// 生成1条服务器信息
-ServerInfo GenerateServerInfo(string cpu_cores, string mem_size,
-	string buy_cost, string power_cost) {
-	ServerInfo server;
-
-	// 存储cpu核数
-	for (int i = 0; i < cpu_cores.size() - 1; i++) {
-		server.cpu = 10 * server.cpu + cpu_cores[i] - '0';
-	}
-	// 存储内存大小
-	for (int i = 0; i < mem_size.size() - 1; i++) {
-		server.mem = 10 * server.mem + mem_size[i] - '0';
-	}
-	// 存储购买成本
-	for (int i = 0; i < buy_cost.size() - 1; i++) {
-		server.buy_cost = 10 * server.buy_cost + buy_cost[i] - '0';
-	}
-	// 存储能耗成本
-	for (int i = 0; i < power_cost.size() - 1; i++) {
-		server.day_power_cost = 10 * server.day_power_cost + power_cost[i] - '0';
-	}
-	return server;
-}
-
-
-// 生成服务器信息表
-void InputServerInfos(unordered_map<string, ServerInfo>& server_infos) {
-	int server_info_num;
-	string server_type, cpu_cores, mem_size, buy_cost, power_cost;
-	scanf_s("%d", &server_info_num);
-
-	for (int i = 0; i < server_info_num; i++) {
-		cin >> server_type >> cpu_cores >> mem_size >> buy_cost >> power_cost;
-		// 存储型号
-		string _server_type = "";
-		for (int i = 1; i < server_type.size() - 1; i++) {
-			_server_type += server_type[i];
-		}
-		// 存储服务器信息结构体
-		ServerInfo server = GenerateServerInfo(cpu_cores, mem_size, buy_cost, power_cost);
-		server_infos[_server_type] = server;
-	}
-}
-
 
 // 遍历输出服务器信息表
 void PrintServerInfos(unordered_map<string, ServerInfo>& server_infos) {
@@ -91,45 +45,6 @@ void PrintServerInfos(unordered_map<string, ServerInfo>& server_infos) {
 		cout << iter->first << "\t" << iter->second.cpu << "\t" << iter->second.mem <<
 		"\t" << iter->second.buy_cost << "\t" << iter->second.day_power_cost << endl;
 }
-
-
-// 生成1条虚拟机信息
-VMInfo GenerateVMInfo(string cpu_cores, string mem_size, string dual_node) {
-	VMInfo vm;
-	// 存储cpu核数
-	for (int i = 0; i < cpu_cores.size() - 1; i++) {
-		vm.cpu = 10 * vm.cpu + cpu_cores[i] - '0';
-	}
-	// 存储内存大小
-	for (int i = 0; i < mem_size.size() - 1; i++) {
-		vm.mem = 10 * vm.mem + mem_size[i] - '0';
-	}
-	// 是否双节点
-	vm.dual_node = dual_node[0] - '0';
-
-	return vm;
-}
-
-
-// 生成虚拟机信息表
-void InputVMInfos(unordered_map<string, VMInfo>& vm_infos) {
-	int vm_info_num;
-	string vm_type, cpu_cores, mem_size, dual_node;
-	scanf_s("%d", &vm_info_num);
-
-	for (int i = 0; i < vm_info_num; i++) {
-		cin >> vm_type >> cpu_cores >> mem_size >> dual_node;
-		// 存储型号
-		string _vm_type = "";
-		for (int i = 1; i < vm_type.size() - 1; i++) {
-			_vm_type += vm_type[i];
-		}
-		// 存储服务器信息结构体
-		VMInfo vm = GenerateVMInfo(cpu_cores, mem_size, dual_node);
-		vm_infos[_vm_type] = vm;
-	}
-}
-
 
 // 遍历输出服务器信息表
 void PrintVMInfos(unordered_map<string, VMInfo>&vm_infos) {
@@ -146,7 +61,7 @@ void PrintVMInfos(unordered_map<string, VMInfo>&vm_infos) {
  * @param vm_infos 虚拟机信息集合,类型为unordered_map<虚拟机型号,虚拟机实体>
  * @param requests_set 请求序列集合,类型为unordered_map<天数,该天的请求队列>
 */
-void InitialzieData(unordered_map<string, ServerInfo>& server_info, unordered_map<string, VMInfo>& vm_infos, unordered_map<int, vector<Request>>& requests_set)
+void InitialzieData(unordered_map<string, ServerInfo>& server_infos, unordered_map<string, VMInfo>& vm_infos, unordered_map<int, vector<Request>>& requests_set)
 {
 	int server_num = 0;		//服务器数量
 	int vm_num = 0;			//虚拟机数量
@@ -166,17 +81,16 @@ void InitialzieData(unordered_map<string, ServerInfo>& server_info, unordered_ma
 		ServerInfo si;
 
 		getline(ifs, buf);
-		buf = trim(buf, "(");
-		buf = trim(buf, ")");
+		buf = Trim(buf);
 		tokens = vector<string>{};
-		split(buf, tokens, ", ");
+		Split(buf, tokens, ", ");
 
 		si.cpu = atoi(tokens[1].c_str());
 		si.mem = atoi(tokens[2].c_str());
 		si.buy_cost = atoi(tokens[3].c_str());
 		si.day_power_cost = atoi(tokens[4].c_str());
 
-		server_info[tokens[0]] = si;
+		server_infos[tokens[0]] = si;
 	}
 
 	//初始化虚拟机信息
@@ -187,10 +101,9 @@ void InitialzieData(unordered_map<string, ServerInfo>& server_info, unordered_ma
 		VMInfo vi;
 
 		getline(ifs, buf);
-		buf = trim(buf, "(");
-		buf = trim(buf, ")");
+		buf = Trim(buf);
 		tokens = vector<string>{};
-		split(buf, tokens, ", ");
+		Split(buf, tokens, ", ");
 
 		vi.cpu = atoi(tokens[1].c_str());
 		vi.mem = atoi(tokens[2].c_str());
@@ -212,11 +125,10 @@ void InitialzieData(unordered_map<string, ServerInfo>& server_info, unordered_ma
 		{
 			Request r;
 			getline(ifs, buf);
-			buf = trim(buf, "(");
-			buf = trim(buf, ")");
+			buf = Trim(buf);
 
 			tokens = vector<string>{};
-			split(buf, tokens, ", ");
+			Split(buf, tokens, ", ");
 			if (tokens[0] == "add")
 			{
 				r.op_type = ADD;
