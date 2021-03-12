@@ -1,23 +1,23 @@
 #include "../include/vm.h"
 
 
-void VM::pCreatRequest(){
-    if(svNode == -1){
-        cout<<'('<<sv_id_<<')'<<endl;
-    }else{
-        cout<<'('<<sv_id_<<','<<'A'+svNode<<')'<<endl;
-    }
-
-}
-
-
-void VM::pMigration(){
-    if(svNode == -1){
-        cout<<'('<<vMID<<','<<sv_id<<')'<<endl;
-    }else{
-        cout<<'('<<vMID<<','<<sv_id<<','<< 'A' + svNode <<')'<<endl;
-    }
-}
+//void VM::pCreatRequest(){
+//    if(svNode == -1){
+//        cout<<'('<<sv_id_<<')'<<endl;
+//    }else{
+//        cout<<'('<<sv_id_<<','<<'A'+svNode<<')'<<endl;
+//    }
+//
+//}
+//
+//
+//void VM::pMigration(){
+//    if(svNode == -1){
+//        cout<<'('<<vMID<<','<<sv_id<<')'<<endl;
+//    }else{
+//        cout<<'('<<vMID<<','<<sv_id<<','<< 'A' + svNode <<')'<<endl;
+//    }
+//}
 
 
 //void VM::add(int sv){
