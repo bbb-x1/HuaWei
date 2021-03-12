@@ -24,16 +24,25 @@ public:
     VM();
     VM(int vm_id, string vm_str);
 
-    void add(int sv_id, int sv_node,
+    void Add(int sv_id, int sv_node,
         unordered_map<int, Server>& server_resources, 
         unordered_map<string, VirtualMachineInfo>& vm_infos,
         unordered_map<int, Server>& server_runs,
         unordered_map<int, Server>& server_closes);   //将虚拟机加到服务器
-    //void del(Server target, VirtualMachineInfo vm_info);
+    
+    
+    void Del(unordered_map<int, Server>& server_resources,
+        unordered_map<string, VirtualMachineInfo>& vm_infos,
+        unordered_map<int, Server>& server_runs,
+        unordered_map<int, Server>& server_closes);
 
     void PCreatRequest();   //输出创建请求的部署情况
     void PMigration();      //输出该虚拟机迁移情况
 };
 
-
+void CreateVM(int vm_id, string vm_str,
+    unordered_map<string, VirtualMachineInfo>& vm_infos,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server>& server_runs,
+    unordered_map<int, Server>& server_closes);
 

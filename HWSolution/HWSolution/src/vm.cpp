@@ -9,23 +9,23 @@ VM::VM(int vm_id, string vm_str) {
 }
 
 void VM::PCreatRequest(){
-    if(sv_node == -1){
+    if(sv_node_ == -1){
         cout<<'('<<sv_id_<<')'<<endl;
     }else{
-        cout<<'('<<sv_id_<<','<<'A'+sv_node<<')'<<endl;
+        cout<<'('<<sv_id_<<','<<'A'+sv_node_<<')'<<endl;
     }
 }
 
 void VM::PMigration(){
-    if(sv_node == -1){
+    if(sv_node_ == -1){
         cout<<'('<<vm_id_<<','<<sv_id_<<')'<<endl;
     }else{
-        cout<<'('<<vm_id_<<','<<sv_id_<<','<< 'A' + sv_node <<')'<<endl;
+        cout<<'('<<vm_id_<<','<<sv_id_<<','<< 'A' + sv_node_ <<')'<<endl;
     }
 }
 
 
-void VM::add(int sv_id, int sv_node,
+void VM::Add(int sv_id, int sv_node,
     unordered_map<int, Server>& server_resources, 
     unordered_map<string, VirtualMachineInfo>& vm_infos,
     unordered_map<int, Server>& server_runs,
@@ -33,22 +33,120 @@ void VM::add(int sv_id, int sv_node,
 
     sv_id_ = sv_id_;
     sv_node_ = sv_node;
-    if (vm_infos[vm_str_].dual_node == 1) {
-        server_resources[sv_id].IncreaseUse(vm_infos[vm_str_].cpu / 2, vm_infos[vm_str_].mem / 2,'A',
+    if (sv_node == -1) {
+        server_resources[sv_id].IncreaseUse(vm_infos[vm_str_].cpu / 2, vm_infos[vm_str_].mem / 2,'a',
             server_runs, server_closes);
-        server_resources[sv_id].IncreaseUse(vm_infos[vm_str_].cpu / 2, vm_infos[vm_str_].mem / 2, 'B',
+        server_resources[sv_id].IncreaseUse(vm_infos[vm_str_].cpu / 2, vm_infos[vm_str_].mem / 2, 'b',
+            server_runs, server_closes);
+    }
+    else if (sv_node == 0) {
+        server_resources[sv_id].IncreaseUse(vm_infos[vm_str_].cpu, vm_infos[vm_str_].mem, 'a',
+            server_runs, server_closes);
+    }
+    else if (sv_node == 1) {
+        server_resources[sv_id].IncreaseUse(vm_infos[vm_str_].cpu, vm_infos[vm_str_].mem, 'b',
+            server_runs, server_closes);
+    }
+    else {
+        cout << "Error:sv_node" << endl;
+    }
+}
+
+
+void VM::Del(unordered_map<int, Server>& server_resources,
+    unordered_map<string, VirtualMachineInfo>& vm_infos,
+    unordered_map<int, Server>& server_runs,
+    unordered_map<int, Server>& server_closes) {
+    
+    if (sv_node_ == -1) {
+        server_resources[sv_id_].DecreaseUse(vm_infos[vm_str_].cpu / 2, vm_infos[vm_str_].mem / 2, 'a',
+            server_runs, server_closes);
+        server_resources[sv_id_].DecreaseUse(vm_infos[vm_str_].cpu / 2, vm_infos[vm_str_].mem / 2, 'b',
+            server_runs, server_closes);
+    }
+    else if(sv_node_ == 0){
+        server_resources[sv_id_].DecreaseUse(vm_infos[vm_str_].cpu, vm_infos[vm_str_].mem, 'a',
+            server_runs, server_closes);
+    }
+    else{//sv_node_==1
+        server_resources[sv_id_].DecreaseUse(vm_infos[vm_str_].cpu, vm_infos[vm_str_].mem, 'b',
             server_runs, server_closes);
     }
 }
-//
-//
-//void VM::del(Server target, VirtualMachineInfo vm_info) {
-//    if (vm_info.dual_node == 0) {
-//        target.DecreaseUse(vm_info.cpu, vm_info.mem, svNode + 'A');
-//    }
-//    else {
-//        target.DecreaseUse(vm_info.cpu, vm_info.mem, 'A');
-//        target.DecreaseUse(vm_info.cpu, vm_info.mem, 'B');
-//    }
-//}
 
+
+void CreateVM(int vm_id, string vm_str, 
+    unordered_map<string, VirtualMachineInfo>& vm_infos,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server>& server_runs,
+    unordered_map<int, Server>& server_closes) {
+
+    VM vm(vm_id, vm_str);
+    int judge = 0;
+    for (auto i = server_runs.begin();i != server_closes.end(); ++i) {
+        Node a = (*i).second.get_node('a');
+        Node b = (*i).second.get_node('b');
+        if (vm_infos[vm_str].dual_node == 1) {
+            if (a.cpu_res >= vm_infos[vm_str].cpu / 2 && a.mem_res >= vm_infos[vm_str].mem / 2
+                && b.cpu_res >= vm_infos[vm_str].cpu / 2 && b.mem_res >= vm_infos[vm_str].mem / 2) {
+                vm.Add((*i).first, 0, server_resources, vm_infos, server_runs, server_closes);
+                vm.Add((*i).first, 1, server_resources, vm_infos, server_runs, server_closes);
+                judge = 1;
+                break;
+            }
+        }
+        else {
+            if (a.cpu_res >= vm_infos[vm_str].cpu && a.mem_res >= vm_infos[vm_str].mem) {
+                vm.Add((*i).first, 0, server_resources, vm_infos, server_runs, server_closes);
+                judge = 1;
+                break;
+            }
+            if (b.cpu_res >= vm_infos[vm_str].cpu && b.mem_res >= vm_infos[vm_str].mem) {
+                vm.Add((*i).first, 1, server_resources, vm_infos, server_runs, server_closes);
+                judge = 1;
+                break;
+            }
+        }
+    }
+    if (judge == 1) {
+        return;
+    }
+    for (auto i = server_closes.begin(); i != server_closes.end(); ++i) {
+        Node a = (*i).second.get_node('a');
+        Node b = (*i).second.get_node('b');
+        if (vm_infos[vm_str].dual_node == 1) {
+            if (a.cpu_res >= vm_infos[vm_str].cpu / 2 && a.mem_res >= vm_infos[vm_str].mem / 2
+                && b.cpu_res >= vm_infos[vm_str].cpu / 2 && b.mem_res >= vm_infos[vm_str].mem / 2) {
+                vm.Add((*i).first, 0, server_resources, vm_infos, server_runs, server_closes);
+                vm.Add((*i).first, 1, server_resources, vm_infos, server_runs, server_closes);
+                judge = 1;
+                server_runs[(*i).first] = (*i).second;
+                server_closes.erase((*i).first);
+                break;
+            }
+        }
+        else {
+            if (a.cpu_res >= vm_infos[vm_str].cpu && a.mem_res >= vm_infos[vm_str].mem) {
+                vm.Add((*i).first, 0, server_resources, vm_infos, server_runs, server_closes);
+                judge = 1;
+                server_runs[(*i).first] = (*i).second;
+                server_closes.erase((*i).first);
+                break;
+            }
+            if (b.cpu_res >= vm_infos[vm_str].cpu && b.mem_res >= vm_infos[vm_str].mem) {
+                vm.Add((*i).first, 1, server_resources, vm_infos, server_runs, server_closes);
+                judge = 1;
+                server_runs[(*i).first] = (*i).second;
+                server_closes.erase((*i).first);
+                break;
+            }
+        }
+    }
+
+    if (judge == 0) {
+        cout << "Error:CreatVM" << endl;
+    }
+
+    return;
+
+}
