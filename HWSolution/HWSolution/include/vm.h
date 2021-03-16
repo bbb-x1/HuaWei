@@ -24,17 +24,22 @@ public:
     VM();
     VM(int vm_id, string vm_str);
 
+    //将虚拟机加到服务器（sv_id）的sv_node节点
     void Add(int sv_id, int sv_node,
+        unordered_map<string, VMInfo>& vm_infos,
         unordered_map<int, Server>& server_resources, 
-        unordered_map<string, VirtualMachineInfo>& vm_infos,
         unordered_map<int, Server>& server_runs,
-        unordered_map<int, Server>& server_closes);   //将虚拟机加到服务器
+        unordered_map<int, Server>& server_closes);   
     
     
-    void Del(unordered_map<int, Server>& server_resources,
-        unordered_map<string, VirtualMachineInfo>& vm_infos,
+    void Del(
+        unordered_map<string, VMInfo>& vm_infos,
+        unordered_map<int, VM>& vm_runs,
+        unordered_map<int, Server>& server_resources,
         unordered_map<int, Server>& server_runs,
         unordered_map<int, Server>& server_closes);
+
+
 
     void PCreatRequest();   //输出创建请求的部署情况
     void PMigration();      //输出该虚拟机迁移情况
@@ -42,7 +47,15 @@ public:
 
 void CreateVM(int vm_id, string vm_str,
     unordered_map<string, VirtualMachineInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
     unordered_map<int, Server>& server_resources,
     unordered_map<int, Server>& server_runs,
     unordered_map<int, Server>& server_closes);
 
+//将虚拟机vm迁移到服务器（sv_id）的sv_node节点
+void MigrationVM(VM vm, int sv_id, int sv_node,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server>& server_runs,
+    unordered_map<int, Server>& server_closes);

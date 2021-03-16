@@ -15,7 +15,7 @@ const string kFilePath = "resource/training-1.txt";
 // 服务器信息
 unordered_map<string, ServerInfo> server_infos;
 // 虚拟机信息
-unordered_map<string, VirtualMachineInfo> vm_infos;
+unordered_map<string, VMInfo> vm_infos;
 
 
 // 已购买的服务器
@@ -28,6 +28,7 @@ unordered_map<int, Server> server_runs;
 unordered_map<int, Server> server_closes;
 
 // 当前开机虚拟机
+// int 为vm_id
 unordered_map<int, VM> vm_runs;
 
 // 全部请求序列
