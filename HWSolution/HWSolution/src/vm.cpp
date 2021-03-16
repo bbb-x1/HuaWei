@@ -78,9 +78,9 @@ void VM::Del(
     vm_runs.erase(vm_id_);
 }
 
-void CreateVM(int vm_id, string vm_str, 
-    unordered_map<string, VirtualMachineInfo>& vm_infos,
-    unordered_map<int, VM> &vm_runs,
+void CreateVM(int vm_id, string vm_str,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
     unordered_map<int, Server>& server_resources,
     unordered_map<int, Server>& server_runs,
     unordered_map<int, Server>& server_closes) {
@@ -97,6 +97,7 @@ void CreateVM(int vm_id, string vm_str,
                 vm.Add((*i).first, 0, vm_infos, server_resources, server_runs, server_closes);
                 vm.Add((*i).first, 1, vm_infos, server_resources, server_runs, server_closes);
                 judge = 1;
+                cout <<'('<< vm.sv_id_<< ')' << endl;
                 break;
             }
         }
@@ -104,11 +105,14 @@ void CreateVM(int vm_id, string vm_str,
             if (a.cpu_res >= vm_infos[vm_str].cpu && a.mem_res >= vm_infos[vm_str].mem) {
                 vm.Add((*i).first, 0, vm_infos, server_resources,  server_runs, server_closes);
                 judge = 1;
+                cout << '(' << vm.sv_id_ <<",A"<< ')' << endl;
                 break;
             }
             if (b.cpu_res >= vm_infos[vm_str].cpu && b.mem_res >= vm_infos[vm_str].mem) {
                 vm.Add((*i).first, 1, vm_infos, server_resources,  server_runs, server_closes);
                 judge = 1;
+
+                cout << '(' << vm.sv_id_ << ",B" << ')' << endl;
                 break;
             }
         }
@@ -125,8 +129,7 @@ void CreateVM(int vm_id, string vm_str,
                 vm.Add((*i).first, 0, vm_infos, server_resources,  server_runs, server_closes);
                 vm.Add((*i).first, 1, vm_infos, server_resources,  server_runs, server_closes);
                 judge = 1;
-                server_runs[(*i).first] = (*i).second;
-                server_closes.erase((*i).first);
+                cout << '(' << vm.sv_id_ << ')' << endl;
                 break;
             }
         }
@@ -134,15 +137,14 @@ void CreateVM(int vm_id, string vm_str,
             if (a.cpu_res >= vm_infos[vm_str].cpu && a.mem_res >= vm_infos[vm_str].mem) {
                 vm.Add((*i).first, 0, vm_infos, server_resources,  server_runs, server_closes);
                 judge = 1;
-                server_runs[(*i).first] = (*i).second;
-                server_closes.erase((*i).first);
+                cout << '(' << vm.sv_id_ << ",A" << ')' << endl;
                 break;
             }
             if (b.cpu_res >= vm_infos[vm_str].cpu && b.mem_res >= vm_infos[vm_str].mem) {
                 vm.Add((*i).first, 1, vm_infos, server_resources,  server_runs, server_closes);
                 judge = 1;
-                server_runs[(*i).first] = (*i).second;
-                server_closes.erase((*i).first);
+                judge = 1;
+                cout << '(' << vm.sv_id_ << ",B" << ')' << endl;
                 break;
             }
         }
@@ -151,8 +153,6 @@ void CreateVM(int vm_id, string vm_str,
     if (judge == 0) {
         cout << "Error:CreatVM" << endl;
     }
-
-    return;
 
 }
 

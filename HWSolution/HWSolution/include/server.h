@@ -22,8 +22,8 @@ typedef struct ServerNode{
 class Server {
 private:
 	int ID_;  // 服务器ID
-	Node* a;  // 节点a
-	Node* b;  // 节点b
+	Node  a;  // 节点a
+	Node  b;  // 节点b
 	// 开机
 	void _Open(unordered_map<int, Server>& server_runs,unordered_map<int, Server>& server_closes);
 	// 关机
@@ -39,4 +39,8 @@ public:
 	Node get_node(char node);  // 获取节点状态
 };
 
-void PurchaseServer(string& server_str, int& server_number, unordered_map<string, ServerInfo>& server_infos, unordered_map<int, Server>& server_resources, int& BUYCOST, int& TOTALCOST);
+void PurchaseServer(string& server_str, int& server_number,
+	unordered_map<string, ServerInfo>& server_infos,
+	unordered_map<int, Server>& server_resources,
+	unordered_map<int, Server>& server_closes,
+	long long& BUYCOST, long long& TOTALCOST);

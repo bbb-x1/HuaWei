@@ -46,7 +46,7 @@ public:
 };
 
 void CreateVM(int vm_id, string vm_str,
-    unordered_map<string, VirtualMachineInfo>& vm_infos,
+    unordered_map<string, VMInfo>& vm_infos,
     unordered_map<int, VM>& vm_runs,
     unordered_map<int, Server>& server_resources,
     unordered_map<int, Server>& server_runs,

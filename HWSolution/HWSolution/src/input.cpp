@@ -130,7 +130,7 @@ void InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_m
 }
 
 
-void StatisticInfo(unordered_map<string, VMInfo>& vm_infos, unordered_map<int, VM> vm_runs,unordered_map<int, vector<Request>>& requests_set)
+pair<int ,int> StatisticInfo(unordered_map<string, VMInfo>& vm_infos, unordered_map<int, VM> vm_runs,unordered_map<int, vector<Request>>& requests_set)
 {
 	unordered_map<int, int> capacitys_cpu_set;
 	unordered_map<int, int> capacitys_mem_set;
@@ -184,5 +184,10 @@ void StatisticInfo(unordered_map<string, VMInfo>& vm_infos, unordered_map<int, V
 		cout << "第" << it->first+1 << "天," << "内存需求量为" << it->second << endl;
 	}
 	cout << "CPU需求量最大为:" << cpu_max <<",为第"<<cpu_max_day<<"天"<< endl;
+	
 	cout << "内存需求量最大为:" << mem_max << ",为第" << mem_max_day << "天" << endl;
+
+	pair<int, int> cm(cpu_max, mem_max);
+
+	return cm;
 }
