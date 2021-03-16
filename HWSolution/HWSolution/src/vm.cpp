@@ -28,10 +28,10 @@ void VM::PMigration(){
 void VM::Add(int sv_id, int sv_node,
     unordered_map<string, VMInfo>& vm_infos,
     unordered_map<int, Server>& server_resources, 
-    unordered_map<int, Server>& server_runs,
-    unordered_map<int, Server>& server_closes){
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes){
 
-    sv_id_ = sv_id_;
+    sv_id_ = sv_id;
     sv_node_ = sv_node;
     if (sv_node == -1) {
         server_resources[sv_id].IncreaseUse(vm_infos[vm_str_].cpu / 2, vm_infos[vm_str_].mem / 2,'a',
@@ -57,8 +57,8 @@ void VM::Del(
     unordered_map<string, VMInfo>& vm_infos,
     unordered_map<int, VM>& vm_runs,
     unordered_map<int, Server>& server_resources,
-    unordered_map<int, Server>& server_runs,
-    unordered_map<int, Server>& server_closes) {
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes) {
     
     if (sv_node_ == -1) {
         server_resources[sv_id_].DecreaseUse(vm_infos[vm_str_].cpu / 2, vm_infos[vm_str_].mem / 2, 'a',
@@ -82,20 +82,19 @@ void CreateVM(int vm_id, string vm_str,
     unordered_map<string, VMInfo>& vm_infos,
     unordered_map<int, VM>& vm_runs,
     unordered_map<int, Server>& server_resources,
-    unordered_map<int, Server>& server_runs,
-    unordered_map<int, Server>& server_closes) {
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes) {
 
     VM vm(vm_id, vm_str);
     vm_runs[vm_id] = vm;
     int judge = 0;
-    for (auto i = server_runs.begin();i != server_closes.end(); ++i) {
-        Node a = (*i).second.get_node('a');
-        Node b = (*i).second.get_node('b');
+    for (auto i = server_runs.begin();i != server_runs.end(); ++i) {
+        Node a = (*i).second->get_node('a');
+        Node b = (*i).second->get_node('b');
         if (vm_infos[vm_str].dual_node == 1) {
             if (a.cpu_res >= vm_infos[vm_str].cpu / 2 && a.mem_res >= vm_infos[vm_str].mem / 2
                 && b.cpu_res >= vm_infos[vm_str].cpu / 2 && b.mem_res >= vm_infos[vm_str].mem / 2) {
-                vm.Add((*i).first, 0, vm_infos, server_resources, server_runs, server_closes);
-                vm.Add((*i).first, 1, vm_infos, server_resources, server_runs, server_closes);
+                vm.Add((*i).first, -1, vm_infos, server_resources, server_runs, server_closes);
                 judge = 1;
                 cout <<'('<< vm.sv_id_<< ')' << endl;
                 break;
@@ -121,13 +120,12 @@ void CreateVM(int vm_id, string vm_str,
         return;
     }
     for (auto i = server_closes.begin(); i != server_closes.end(); ++i) {
-        Node a = (*i).second.get_node('a');
-        Node b = (*i).second.get_node('b');
+        Node a = (*i).second->get_node('a');
+        Node b = (*i).second->get_node('b');
         if (vm_infos[vm_str].dual_node == 1) {
             if (a.cpu_res >= vm_infos[vm_str].cpu / 2 && a.mem_res >= vm_infos[vm_str].mem / 2
                 && b.cpu_res >= vm_infos[vm_str].cpu / 2 && b.mem_res >= vm_infos[vm_str].mem / 2) {
-                vm.Add((*i).first, 0, vm_infos, server_resources,  server_runs, server_closes);
-                vm.Add((*i).first, 1, vm_infos, server_resources,  server_runs, server_closes);
+                vm.Add((*i).first, -1, vm_infos, server_resources,  server_runs, server_closes);
                 judge = 1;
                 cout << '(' << vm.sv_id_ << ')' << endl;
                 break;
@@ -160,8 +158,8 @@ void MigrationVM(VM vm, int sv_id, int sv_node,
     unordered_map<string, VMInfo>& vm_infos,
     unordered_map<int, VM>& vm_runs,
     unordered_map<int, Server>& server_resources,
-    unordered_map<int, Server>& server_runs,
-    unordered_map<int, Server>& server_closes) {
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes) {
 
     vm.Del(vm_infos, vm_runs, server_resources, server_runs, server_closes);
     vm.Add(sv_id, sv_node, vm_infos, server_resources, server_runs, server_closes);

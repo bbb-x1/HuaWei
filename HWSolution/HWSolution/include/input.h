@@ -30,14 +30,14 @@ string Trim(string s);
  * @param vm_infos 虚拟机信息集合,类型为unordered_map<虚拟机型号,虚拟机实体>
  * @param requests_set 请求序列集合,类型为unordered_map<天数,该天的请求队列>
 */
-void InitializeData(unordered_map<string,ServerInfo>& server_info,unordered_map<string,VMInfo>& vm_infos,unordered_map<int,vector<Request>>& requests_set);
+void InitializeData(unordered_map<string,ServerInfo>& server_info,unordered_map<string,VMInfo>& vm_infos,vector<vector<Request>>& requests_set);
 
 /**
  * @brief 统计请求信息
  * @param vm_infos 虚拟机集合
  * @param requests_set 请求集合
 */
-pair<int, int> StatisticInfo(unordered_map<string, VMInfo>& vm_info, unordered_map<int, VM> vm_runs,unordered_map<int, vector<Request>>& requests_set);
+pair<int, int> StatisticInfo(unordered_map<string, VMInfo>& vm_info, unordered_map<int, VM> vm_runs, vector<vector<Request>>& requests_set);
 
 
 // 遍历输出服务器信息表

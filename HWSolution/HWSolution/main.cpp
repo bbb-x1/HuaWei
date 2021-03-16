@@ -24,9 +24,9 @@ int server_number = 0;
 unordered_map<int, Server> server_resources;
 
 // 当前开机服务器
-unordered_map<int, Server> server_runs;
+unordered_map<int, Server*> server_runs;
 // 当前关机服务器
-unordered_map<int, Server> server_closes;
+unordered_map<int, Server*> server_closes;
 
 // 当前开机虚拟机
 // int 为vm_id
@@ -43,14 +43,16 @@ void Migration();
 int main(int argc, char **argv){
 
 	//初始化数据
-	//InitializeData(server_infos, vm_infos, requests_set);*/
+	InitializeData(server_infos, vm_infos, requests_set);
 	//// 打印服务器信息
 	//PrintServerInfos(server_infos);
 	//// 打印虚拟机信息
 	//PrintVMInfos(vm_infos);
-
+	int day = 0;
 	//每天的工作
 	for (auto it = requests_set.cbegin(); it != requests_set.cend(); ++it) {
+		day++;
+		cout <<"*************"<<day << endl;
 		Purchase(it);
 		Migration();
 		for (auto itv = it->cbegin(); itv != it->cend(); ++itv) {
@@ -90,7 +92,7 @@ void Purchase(vector<vector<Request>>::const_iterator& it) {
 			cpu_mem_needed.second / server_infos[max_server_name].mem);
 
 
-		for (int i = 0; i < max_server + 10; ++i) {
+		for (int i = 0; i < max_server + 100; ++i) {
 			PurchaseServer(max_server_name, server_number, server_infos,
 				server_resources, server_closes, BUYCOST, TOTALCOST);
 		}
