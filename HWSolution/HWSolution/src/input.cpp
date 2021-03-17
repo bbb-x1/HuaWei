@@ -52,20 +52,22 @@ void InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_m
 	ifstream ifs;
 	ifs.open("resource/training-1.txt", ios::in);
 	
-	string buf;
+	char buf[1024];
 
 	//初始化服务器信息
-	getline(ifs, buf);
-	server_num = atoi(buf.c_str());
+	cin.getline(buf, 1024);
+	server_num = atoi(buf);
 	vector<string> tokens;
+	string sbuf;
 	for (int i = 0; i < server_num; i++)
 	{
 		ServerInfo si;
 
-		getline(ifs, buf);
-		buf = Trim(buf);
+		cin.getline(buf,1024);
+		sbuf = string(buf);
+		sbuf = Trim(sbuf);
 		tokens = vector<string>{};
-		Split(buf, tokens, ", ");
+		Split(sbuf, tokens, ", ");
 
 		si.cpu = atoi(tokens[1].c_str());
 		si.mem = atoi(tokens[2].c_str());
@@ -76,16 +78,17 @@ void InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_m
 	}
 
 	//初始化虚拟机信息
-	getline(ifs, buf);
-	vm_num = atoi(buf.c_str());
+	cin.getline(buf,1024);
+	vm_num = atoi(buf);
 	for (int i = 0; i < vm_num; i++)
 	{
 		VMInfo vi;
 
-		getline(ifs, buf);
-		buf = Trim(buf);
+		cin.getline(buf,1024);
+		sbuf = string(buf);
+		sbuf = Trim(sbuf);
 		tokens = vector<string>{};
-		Split(buf, tokens, ", ");
+		Split(sbuf, tokens, ", ");
 
 		vi.cpu = atoi(tokens[1].c_str());
 		vi.mem = atoi(tokens[2].c_str());
@@ -95,22 +98,23 @@ void InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_m
 	}
 
 	//初始化请求序列
-	getline(ifs, buf);
+	cin.getline(buf, 1024);
 	vector<Request> queue_requests;
-	requests_times = atoi(buf.c_str());
+	requests_times = atoi(buf);
 	for (int i = 0; i < requests_times; i++)
 	{
-		getline(ifs, buf);
+		cin.getline(buf, 1024);
 		queue_requests = vector<Request>{};
-		item_num = atoi(buf.c_str());
+		item_num = atoi(buf);
 		for (int j = 0; j < item_num; j++)
 		{
 			Request r;
-			getline(ifs, buf);
-			buf = Trim(buf);
+			cin.getline(buf,1024);
+			sbuf = string(buf);
+			sbuf = Trim(sbuf);
 
 			tokens = vector<string>{};
-			Split(buf, tokens, ", ");
+			Split(sbuf, tokens, ", ");
 			if (tokens[0] == "add")
 			{
 				r.op_type = ADD;
