@@ -115,3 +115,16 @@ void PurchaseServer(string& server_str, int &server_number,
 	BUYCOST += server_infos[server_str].buy_cost;
 	TOTALCOST += server_infos[server_str].buy_cost;
 }
+
+
+string SelectPurchaseServer(unordered_map<string, ServerInfo> server_infos) {
+	string max_server_name;
+	int max_buy_cost = 0;
+	for (auto i = server_infos.cbegin(); i != server_infos.cend(); ++i) {
+		if (i->second.buy_cost > max_buy_cost) {
+			max_buy_cost = i->second.buy_cost;
+			max_server_name = i->first;
+		}
+	}
+	return max_server_name;
+}

@@ -44,3 +44,5 @@ void PurchaseServer(string& server_str, int& server_number,
 	unordered_map<int, Server>& server_resources,
 	unordered_map<int, Server*>& server_closes,
 	long long& BUYCOST, long long& TOTALCOST);
+
+string SelectPurchaseServer(unordered_map<string, ServerInfo> server_infos);

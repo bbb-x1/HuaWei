@@ -39,13 +39,18 @@ public:
         unordered_map<int, Server*>& server_runs,
         unordered_map<int, Server*>& server_closes);
 
-
-
     void PCreatRequest();   //输出创建请求的部署情况
     void PMigration();      //输出该虚拟机迁移情况
 };
 
-void CreateVM(int vm_id, string vm_str,
+//void CreateVM(int vm_id, string vm_str,
+//    unordered_map<string, VMInfo>& vm_infos,
+//    unordered_map<int, VM>& vm_runs,
+//    unordered_map<int, Server>& server_resources,
+//    unordered_map<int, Server*>& server_runs,
+//    unordered_map<int, Server*>& server_closes);
+
+pair<int, int> CreateVM(int vm_id, string vm_str,
     unordered_map<string, VMInfo>& vm_infos,
     unordered_map<int, VM>& vm_runs,
     unordered_map<int, Server>& server_resources,
