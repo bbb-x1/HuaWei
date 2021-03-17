@@ -43,14 +43,16 @@ void PrintVMInfos(unordered_map<string, VMInfo>&vm_infos) {
 		"\t" << iter->second.dual_node<< endl;
 }
 
-void InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_map<string, VMInfo>& vm_infos, vector<vector<Request>>& requests_set)
+void InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_map<string, VMInfo>& vm_infos,
+	vector<vector<Request>>& requests_set, const string file_path)
 {
 	int server_num = 0;		//服务器数量
 	int vm_num = 0;			//虚拟机数量
 	int requests_times = 0; //请求天数
 	int item_num = 0;		//每天操作次数
 	ifstream ifs;
-	ifs.open("resource/training-1.txt", ios::in);
+	FILE* stream1;
+	freopen_s(&stream1, file_path.c_str(), "rb", stdin);
 	
 	char buf[1024];
 

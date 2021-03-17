@@ -39,7 +39,7 @@ vector<vector<Request>> requests_set;
 long long BUYCOST = 0, POWERCOST = 0, TOTALCOST = 0;
 
 //void Purchase(vector<vector<Request>>::const_iterator& it);
-void PrintPurchase(unordered_map<string, int>&, int);
+void PrintPurchase(unordered_map<string, int>&);
 void PrintMigration();
 void PrintDeploy(vector<pair<int, int>>);
 
@@ -47,7 +47,7 @@ void PrintDeploy(vector<pair<int, int>>);
 int main(int argc, char **argv){
 
 	//初始化数据
-	InitializeData(server_infos, vm_infos, requests_set);
+	InitializeData(server_infos, vm_infos, requests_set, kFilePath);
 	// 要购买的服务器类型
 	string buy_server_type = SelectPurchaseServer(server_infos);
 	
@@ -55,14 +55,12 @@ int main(int argc, char **argv){
 	int day = 0;  // 天数
 	for (auto it = requests_set.cbegin(); it != requests_set.cend(); ++it) {
 		day++;
-		cout <<"*************"<<day << "*************" << endl;
 
 		// 购买服务器和部署虚拟机
 		// 当天购买的服务器，服务器类型->台数
 		unordered_map<string, int> one_day_purchase;
 		// 当天部署的虚拟机，服务器id->节点
 		vector<pair<int, int>> one_day_create_vm;
-		int one_day_purchase_num = 0;
 		for (auto itv = it->cbegin(); itv != it->cend(); ++itv) {
 			if (itv->op_type == ADD) {
 				pair<int, int>create_vm = CreateVM(itv->vm_id, itv->vm_type, vm_infos, vm_runs,
@@ -71,7 +69,6 @@ int main(int argc, char **argv){
 				if (create_vm.second == -1) {
 					PurchaseServer(buy_server_type, server_number, server_infos, server_resources,
 						server_closes, BUYCOST, TOTALCOST);
-					++one_day_purchase_num;
 					// 在当天购买服务器字典里加入刚买的服务器
 					if (one_day_purchase.find(buy_server_type) == one_day_purchase.end()) {
 						one_day_purchase[buy_server_type] = 1;
@@ -92,13 +89,11 @@ int main(int argc, char **argv){
 		}
 
 		// 输出
-		PrintPurchase(one_day_purchase, one_day_purchase_num);
+		PrintPurchase(one_day_purchase);
 		PrintMigration();
 		PrintDeploy(one_day_create_vm);
 	}
-	cout << "BUYCOST = " << BUYCOST << endl;
 
-	system("pause");
 	return 0;
 }
 
@@ -133,16 +128,20 @@ int main(int argc, char **argv){
 //}
 
 // 输出购买服务器
-void PrintPurchase(unordered_map<string, int>& one_day_purchase, int one_day_purchase_num) {
-	cout << '(' << "purchase, " << one_day_purchase_num << ')' << endl;
+void PrintPurchase(unordered_map<string, int>& one_day_purchase) {
+	int server_kind_num = 0;
 	for (auto it = one_day_purchase.cbegin(); it != one_day_purchase.cend(); ++it) {
-		cout << '(' << it->first << ", " << it->second << ')' << endl;
+		++server_kind_num;
+	}
+	cout << '(' << "purchase," << server_kind_num << ')' << endl;
+	for (auto it = one_day_purchase.cbegin(); it != one_day_purchase.cend(); ++it) {
+		cout << '(' << it->first << "," << it->second << ')' << endl;
 	}
 }
 
 // 输出迁移
 void PrintMigration() {
-	cout << '(' << "migration, " << 0 << ')' << endl;
+	cout << '(' << "migration," << 0 << ')' << endl;
 }
 
 // 输出服务器部署
@@ -152,10 +151,10 @@ void PrintDeploy(vector<pair<int, int>> one_day_create_vm) {
 			cout << '(' << it->first<< ')' << endl;
 		}
 		else if (it->second == 1) {
-			cout << '(' << it->first << ", A" << ')' << endl;
+			cout << '(' << it->first << ",A" << ')' << endl;
 		}
 		else {
-			cout << '(' << it->first << ", B" << ')' << endl;
+			cout << '(' << it->first << ",B" << ')' << endl;
 		}
 	}
 }
