@@ -38,7 +38,7 @@ void InitializeData(unordered_map<string,ServerInfo>& server_infos,unordered_map
  * @param vm_infos 虚拟机集合
  * @param requests_set 请求集合
 */
-pair<int, int> StatisticInfo(unordered_map<string, VMInfo>& vm_info, unordered_map<int, VM> vm_runs, vector<vector<Request>>& requests_set);
+pair<int, int> StatisticInfo(unordered_map<string, VMInfo>& vm_infos, vector<vector<Request>>& requests_set);
 
 
 // 遍历输出服务器信息表

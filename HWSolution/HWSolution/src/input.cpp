@@ -136,63 +136,41 @@ void InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_m
 }
 
 
-pair<int ,int> StatisticInfo(unordered_map<string, VMInfo>& vm_infos, unordered_map<int, VM> vm_runs, vector<vector<Request>>& requests_set)
+pair<int, int> StatisticInfo(unordered_map<string, VMInfo>& vm_infos, vector<vector<Request>>& requests_set)
 {
-	unordered_map<int, int> capacitys_cpu_set;
-	unordered_map<int, int> capacitys_mem_set;
-	int last_day_cpu = 0, last_day_mem = 0;
-	int day = 0;
+	unordered_map<int, VM> vm_runs;
+	int cpu_set = 0;
+	int mem_set = 0;
+	int cpu_max = 0;
+	int mem_max = 0;
 	for (auto it = requests_set.cbegin(); it != requests_set.cend(); it++)
 	{
 		vector<Request> vr = *it;
-		capacitys_cpu_set[day] = 0;
-		capacitys_mem_set[day] = 0;
+
 		for (int i = 0; i < vr.size(); i++)
 		{
 			//申请虚拟机
 			if (vr[i].op_type == ADD)
 			{
-				VM vm;
-				vm.vm_id_ = vr[i].vm_id;
-				vm.vm_str_ = vr[i].vm_type;
+				VM vm(vr[i].vm_id, vr[i].vm_type);
 				vm_runs[vm.vm_id_] = vm;
-				capacitys_cpu_set[day] += vm_infos[vr[i].vm_type].cpu;
-				capacitys_mem_set[day] += vm_infos[vr[i].vm_type].mem;
+				cpu_set += vm_infos[vr[i].vm_type].cpu;
+				mem_set += vm_infos[vr[i].vm_type].mem;
+
 			}
 			else  //删除虚拟机
 			{
-				capacitys_cpu_set[day] -= vm_infos[vm_runs[vr[i].vm_id].vm_str_].cpu;
-				capacitys_mem_set[day] -= vm_infos[vm_runs[vr[i].vm_id].vm_str_].mem;
+				cpu_set -= vm_infos[vm_runs[vr[i].vm_id].vm_str_].cpu;
+				mem_set -= vm_infos[vm_runs[vr[i].vm_id].vm_str_].mem;
+			}
+			if (cpu_set > cpu_max) {
+				cpu_max = cpu_set;
+			}
+			if (mem_set > mem_max) {
+				mem_max = mem_set;
 			}
 		}
-		capacitys_cpu_set[day] += last_day_cpu;
-		capacitys_mem_set[day] += last_day_mem;
-		last_day_cpu = capacitys_cpu_set[day];
-		last_day_mem = capacitys_mem_set[day];
-		day++;
 	}
-	int cpu_max = -1, mem_max = -1;
-	int cpu_max_day = 0, mem_max_day = 0;
-	for (auto it = capacitys_cpu_set.cbegin(); it != capacitys_cpu_set.cend(); it++)
-	{
-		if (it->second > cpu_max)
-		{
-			cpu_max = it->second;
-			cpu_max_day = it->first+1;
-		}
-	}
-	for (auto it = capacitys_mem_set.cbegin(); it != capacitys_mem_set.cend(); it++)
-	{
-		if (it->second > mem_max)
-		{
-			mem_max = it->second;
-			mem_max_day = it->first+1;
-		}
-	}
-	//cout << "CPU需求量最大为:" << cpu_max <<",为第"<<cpu_max_day<<"天"<< endl;
-	//
-	//cout << "内存需求量最大为:" << mem_max << ",为第" << mem_max_day << "天" << endl;
-
 	pair<int, int> cm(cpu_max, mem_max);
 
 	return cm;

@@ -48,6 +48,7 @@ int main(int argc, char **argv){
 
 	//初始化数据
 	InitializeData(server_infos, vm_infos, requests_set, kFilePath);
+
 	// 要购买的服务器类型
 	string buy_server_type = SelectPurchaseServer(server_infos);
 	
