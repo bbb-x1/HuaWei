@@ -52,50 +52,50 @@ int main(int argc, char **argv){
 
 	// 要购买的服务器类型
 	string buy_server_type = SelectPurchaseServer(mem_cpu_ratio,server_infos);
-	////每天的工作
-	//int day = 0;  // 天数
-	//for (auto it = requests_set.cbegin(); it != requests_set.cend(); ++it) {
-	//	day++;
+	//每天的工作
+	int day = 0;  // 天数
+	for (auto it = requests_set.cbegin(); it != requests_set.cend(); ++it) {
+		day++;
+		
+		// 购买服务器和部署虚拟机
+		// 当天购买的服务器，服务器类型->台数
+		unordered_map<string, int> one_day_purchase;
+		// 当天部署的虚拟机，服务器id->节点
+		vector<pair<int, int>> one_day_create_vm;
+		for (auto itv = it->cbegin(); itv != it->cend(); ++itv) {
+			if (itv->op_type == ADD) {
+				pair<int, int>create_vm = CreateVM(itv->vm_id, itv->vm_type, vm_infos, vm_runs,
+					server_resources, server_runs, server_closes);
+				// 当服务器资源不够创建虚拟机时
+				if (create_vm.second == -1) {
+					PurchaseServer(buy_server_type, server_number, server_infos, server_resources,
+						server_closes, BUYCOST, TOTALCOST);
+					// 在当天购买服务器字典里加入刚买的服务器
+					if (one_day_purchase.find(buy_server_type) == one_day_purchase.end()) {
+						one_day_purchase[buy_server_type] = 1;
+					}
+					else {
+						one_day_purchase[buy_server_type]++;
+					}
+					// 再次尝试创建虚拟机
+					create_vm = CreateVM(itv->vm_id, itv->vm_type, vm_infos, vm_runs,
+						server_resources, server_runs, server_closes);
+				}
+				one_day_create_vm.push_back(create_vm);
+			}
+			else {
+				vm_runs[itv->vm_id].Del(vm_infos, vm_runs, server_resources,
+					server_runs, server_closes);
+			}
+		}
 
-	//	// 购买服务器和部署虚拟机
-	//	// 当天购买的服务器，服务器类型->台数
-	//	unordered_map<string, int> one_day_purchase;
-	//	// 当天部署的虚拟机，服务器id->节点
-	//	vector<pair<int, int>> one_day_create_vm;
-	//	for (auto itv = it->cbegin(); itv != it->cend(); ++itv) {
-	//		if (itv->op_type == ADD) {
-	//			pair<int, int>create_vm = CreateVM(itv->vm_id, itv->vm_type, vm_infos, vm_runs,
-	//				server_resources, server_runs, server_closes);
-	//			// 当服务器资源不够创建虚拟机时
-	//			if (create_vm.second == -1) {
-	//				PurchaseServer(buy_server_type, server_number, server_infos, server_resources,
-	//					server_closes, BUYCOST, TOTALCOST);
-	//				// 在当天购买服务器字典里加入刚买的服务器
-	//				if (one_day_purchase.find(buy_server_type) == one_day_purchase.end()) {
-	//					one_day_purchase[buy_server_type] = 1;
-	//				}
-	//				else {
-	//					one_day_purchase[buy_server_type]++;
-	//				}
-	//				// 再次尝试创建虚拟机
-	//				create_vm = CreateVM(itv->vm_id, itv->vm_type, vm_infos, vm_runs,
-	//					server_resources, server_runs, server_closes);
-	//			}
-	//			one_day_create_vm.push_back(create_vm);
-	//		}
-	//		else {
-	//			vm_runs[itv->vm_id].Del(vm_infos, vm_runs, server_resources,
-	//				server_runs, server_closes);
-	//		}
-	//	}
+		// 输出
+		PrintPurchase(one_day_purchase);
+		PrintMigration();
+		PrintDeploy(one_day_create_vm);
+	}
 
-	//	// 输出
-	//	PrintPurchase(one_day_purchase);
-	//	PrintMigration();
-	//	PrintDeploy(one_day_create_vm);
-	//}
-
-	//return 0;
+	return 0;
 }
 
 //void Purchase(vector<vector<Request>>::const_iterator& it) {

@@ -138,7 +138,7 @@ string SelectPurchaseServer(double mem_cpu_ratio, unordered_map<string, ServerIn
 	double min = double(server_infos[result_server].buy_cost) / (double(server_infos[result_server].cpu) + server_infos[result_server].mem);
 	int limit = 5;
 	for (auto iter = rivet + 1; iter != ratio_array.end() && limit!=0; ++iter) {
-		int current_min = double(server_infos[(*iter).first].buy_cost) / (double(server_infos[(*iter).first].cpu) + server_infos[(*iter).first].mem);
+		double current_min = double(server_infos[(*iter).first].buy_cost) / (double(server_infos[(*iter).first].cpu) + server_infos[(*iter).first].mem);
 		if (min > current_min) {
 			min = current_min;
 			result_server = (*iter).first;

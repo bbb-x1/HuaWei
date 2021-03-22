@@ -51,8 +51,8 @@ void InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_m
 	int requests_times = 0; //请求天数
 	int item_num = 0;		//每天操作次数
 	ifstream ifs;
-	FILE* stream1;
-	freopen_s(&stream1, file_path.c_str(), "rb", stdin);
+	//FILE* stream1;
+	//freopen_s(&stream1, file_path.c_str(), "rb", stdin);
 	char buf[1024];
 
 	//初始化服务器信息

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <string>
 #include <unordered_map>
+#include <vector>
 using namespace std;
 
 // 1条服务器基本信息
