@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <iostream>
+#include <algorithm>
 #include <string>
 #include <unordered_map>
 using namespace std;
@@ -45,4 +46,4 @@ void PurchaseServer(string& server_str, int& server_number,
 	unordered_map<int, Server*>& server_closes,
 	long long& BUYCOST, long long& TOTALCOST);
 
-string SelectPurchaseServer(unordered_map<string, ServerInfo> server_infos);
+string SelectPurchaseServer(double mem_cpu_ratio, unordered_map<string, ServerInfo> server_infos);

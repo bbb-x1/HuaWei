@@ -1,6 +1,11 @@
 #include "../include/vm.h"
 
-VM::VM() {}
+VM::VM() {
+    vm_id_ = -1;
+    vm_str_ = " ";
+    sv_id_ = -1;
+    sv_node_ = -1;
+}
 
 VM::VM(int vm_id, string vm_str) {
     vm_id_ = vm_id;
@@ -8,21 +13,21 @@ VM::VM(int vm_id, string vm_str) {
 
 }
 
-void VM::PCreatRequest(){
-    if(sv_node_ == -1){
-        cout<<'('<<sv_id_<<')'<<endl;
-    }else{
-        cout<<'('<<sv_id_<<','<<'A'+sv_node_<<')'<<endl;
-    }
-}
-
-void VM::PMigration(){
-    if(sv_node_ == -1){
-        cout<<'('<<vm_id_<<','<<sv_id_<<')'<<endl;
-    }else{
-        cout<<'('<<vm_id_<<','<<sv_id_<<','<< 'A' + sv_node_ <<')'<<endl;
-    }
-}
+//void VM::PCreatRequest(){
+//    if(sv_node_ == -1){
+//        cout<<'('<<sv_id_<<')'<<endl;
+//    }else{
+//        cout<<'('<<sv_id_<<','<<'A'+sv_node_<<')'<<endl;
+//    }
+//}
+//
+//void VM::PMigration(){
+//    if(sv_node_ == -1){
+//        cout<<'('<<vm_id_<<','<<sv_id_<<')'<<endl;
+//    }else{
+//        cout<<'('<<vm_id_<<','<<sv_id_<<','<< 'A' + sv_node_ <<')'<<endl;
+//    }
+//}
 
 
 void VM::Add(int sv_id, int sv_node,

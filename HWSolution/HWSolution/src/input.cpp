@@ -53,7 +53,6 @@ void InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_m
 	ifstream ifs;
 	FILE* stream1;
 	freopen_s(&stream1, file_path.c_str(), "rb", stdin);
-	
 	char buf[1024];
 
 	//初始化服务器信息
@@ -136,7 +135,7 @@ void InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_m
 }
 
 
-pair<int, int> StatisticInfo(unordered_map<string, VMInfo>& vm_infos, vector<vector<Request>>& requests_set)
+double StatisticInfo(unordered_map<string, VMInfo>& vm_infos, vector<vector<Request>>& requests_set)
 {
 	unordered_map<int, VM> vm_runs;
 	int cpu_set = 0;
@@ -171,7 +170,6 @@ pair<int, int> StatisticInfo(unordered_map<string, VMInfo>& vm_infos, vector<vec
 			}
 		}
 	}
-	pair<int, int> cm(cpu_max, mem_max);
 
-	return cm;
+	return double(mem_max)/cpu_max;
 }

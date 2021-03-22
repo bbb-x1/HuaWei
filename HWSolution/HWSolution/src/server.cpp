@@ -116,15 +116,35 @@ void PurchaseServer(string& server_str, int &server_number,
 	TOTALCOST += server_infos[server_str].buy_cost;
 }
 
+bool sort_compare(const pair<string, double>& item1, const pair<string, double>& item2) {
+	return item1.second < item2.second;
+}
 
-string SelectPurchaseServer(unordered_map<string, ServerInfo> server_infos) {
+string SelectPurchaseServer(double mem_cpu_ratio, unordered_map<string, ServerInfo> server_infos) {
 	string max_server_name;
-	int max_buy_cost = 0;
-	for (auto i = server_infos.cbegin(); i != server_infos.cend(); ++i) {
-		if (i->second.buy_cost > max_buy_cost) {
-			max_buy_cost = i->second.buy_cost;
-			max_server_name = i->first;
-		}
+	int sever_map_len = server_infos.size();
+	vector<pair<string, double>> ratio_array(sever_map_len);
+	int index = 0;
+	for (auto iter = server_infos.cbegin(); iter != server_infos.cend(); ++iter) {
+		ratio_array[index].first = iter->first;
+		ratio_array[index].second = double(iter->second.mem) / double(iter->second.cpu);
+		++index;
 	}
-	return max_server_name;
+	sort(ratio_array.begin(),ratio_array.end(),sort_compare);
+
+	pair<string, double> temp = { " ", mem_cpu_ratio };
+	auto rivet = lower_bound(ratio_array.begin(), ratio_array.end(),temp,sort_compare);
+	string result_server = (*rivet).first;
+	double min = double(server_infos[result_server].buy_cost) / (double(server_infos[result_server].cpu) + server_infos[result_server].mem);
+	int limit = 5;
+	for (auto iter = rivet + 1; iter != ratio_array.end() && limit!=0; ++iter) {
+		int current_min = double(server_infos[(*iter).first].buy_cost) / (double(server_infos[(*iter).first].cpu) + server_infos[(*iter).first].mem);
+		if (min > current_min) {
+			min = current_min;
+			result_server = (*iter).first;
+		}
+		--limit;
+	}
+
+	return result_server;
 }
