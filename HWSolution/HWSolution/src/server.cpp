@@ -105,15 +105,12 @@ Node Server::get_node(char node) {
 void PurchaseServer(string& server_str, int &server_number, 
 	unordered_map<string, ServerInfo> &server_infos, 
 	unordered_map<int, Server>& server_resources,
-	unordered_map<int, Server*>& server_closes,
-	long long& BUYCOST, long long& TOTALCOST) {
+	unordered_map<int, Server*>& server_closes) {
 	int sn = server_number;
 	Server purchased_server(server_str, sn, server_infos[server_str].cpu, server_infos[server_str].mem);
 	server_resources[sn] = purchased_server;
 	server_closes[sn] = &server_resources[sn];
 	++server_number;
-	BUYCOST += server_infos[server_str].buy_cost;
-	TOTALCOST += server_infos[server_str].buy_cost;
 }
 
 bool sort_compare(const pair<string, double>& item1, const pair<string, double>& item2) {
