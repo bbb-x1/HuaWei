@@ -11,8 +11,14 @@ Solution::Solution(unordered_map<string, ServerInfo> server_infos,
 	vector<vector<Request>>::const_iterator& it) {
 	this->server_number_ = server_number;
 	this->server_resources_ = server_resources;
-	this->server_runs_ = server_runs;
-	this->server_closes_ = server_closes;
+	for (auto& it : server_runs)
+	{
+		server_runs_[it.first] = &server_resources_[it.first];
+	}
+	for (auto& it : server_closes)
+	{
+		server_closes_[it.first] = &server_resources_[it.first];
+	}
 	this->vm_runs_ = vm_runs;
 	this->day_cost_ = 0;  // 成本初始化为0
 

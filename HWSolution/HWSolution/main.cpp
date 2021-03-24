@@ -11,7 +11,7 @@
 #include "include/request.h"
 #include "include/solution.h"
 using namespace std;
-constexpr auto SOLUTION_NUM = 50;  // 每一天随机尝试多少次
+constexpr auto SOLUTION_NUM = 4;  // 每一天随机尝试多少次
 const string kFilePath = "resource/training-1.txt";  // 测试数据文件
 
 
@@ -91,6 +91,8 @@ int main(int argc, char **argv){
 		PrintPurchase(best_solution.one_day_purchase_);
 		PrintMigration();
 		PrintDeploy(best_solution.one_day_create_vm_);
+		solution_vec.clear();
+		solution_vec.shrink_to_fit();
 	}
 
 	return 0;
