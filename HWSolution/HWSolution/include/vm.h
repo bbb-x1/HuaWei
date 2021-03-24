@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <math.h>
 #include "server.h"
 using namespace std;
 
@@ -27,6 +28,7 @@ public:
     //将虚拟机加到服务器（sv_id）的sv_node节点
     void Add(int sv_id, int sv_node,
         unordered_map<string, VMInfo>& vm_infos,
+        unordered_map<int, VM>& vm_runs,
         unordered_map<int, Server>& server_resources, 
         unordered_map<int, Server*>& server_runs,
         unordered_map<int, Server*>& server_closes);   
@@ -55,12 +57,25 @@ pair<int, int> CreateVM(int vm_id, string vm_str,
     unordered_map<int, VM>& vm_runs,
     unordered_map<int, Server>& server_resources,
     unordered_map<int, Server*>& server_runs,
-    unordered_map<int, Server*>& server_closes);
+    unordered_map<int, Server*>& server_closes,
+    list<Server*>& cpu_sorted_server);
 
 //将虚拟机vm迁移到服务器（sv_id）的sv_node节点
-void MigrationVM(VM vm, int sv_id, int sv_node,
+void DispatchVM(VM vm, int sv_id, int sv_node,
     unordered_map<string, VMInfo>& vm_infos,
     unordered_map<int, VM>& vm_runs,
     unordered_map<int, Server>& server_resources,
     unordered_map<int, Server*>& server_runs,
     unordered_map<int, Server*>& server_closes);
+
+
+vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes,
+    list<Server*>& cpu_sorted_server,
+    list<Server*>& cpu_re_sorted_server);
+
+

@@ -2,11 +2,13 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <list>
 #include <algorithm>
 #include "include/server.h"
 #include "include/input.h"
 #include "include/vm.h"
 #include "include/request.h"
+
 using namespace std;
 
 
@@ -28,21 +30,29 @@ unordered_map<int, Server*> server_runs;
 // 当前关机服务器
 unordered_map<int, Server*> server_closes;
 
+//虚拟机数量
+int vm_count = 0;
 // 当前开机虚拟机
 // int 为vm_id
 unordered_map<int, VM> vm_runs;
 
 // 全部请求序列
-vector<vector<Request>> requests_set;
+vector<vector<Request> > requests_set;
+
+//以服务器已用cpu排序的服务器列表(大到小)
+list<Server*> cpu_sorted_server;;
+//以服务器已用cpu排序的服务器列表(小到大)
+list<Server*> cpu_re_sorted_server;
 
 // 成本
 long long BUYCOST = 0, POWERCOST = 0, TOTALCOST = 0;
 
 //void Purchase(vector<vector<Request>>::const_iterator& it);
 void PrintPurchase(unordered_map<string, int>&);
-void PrintMigration();
-void PrintDeploy(vector<pair<int, int>>);
-
+void PrintMigration(vector<pair<int, pair<int, int> > >& one_day_migrate_vm);
+void PrintDeploy(vector<pair<int, int> >);
+bool cpu_re_cmp(Server* first, Server* second);
+bool cpu_cmp(Server* first, Server* second);
 
 int main(int argc, char **argv){
 
@@ -60,16 +70,26 @@ int main(int argc, char **argv){
 		// 购买服务器和部署虚拟机
 		// 当天购买的服务器，服务器类型->台数
 		unordered_map<string, int> one_day_purchase;
+		//当天迁移的虚拟机，虚拟机id
+		vector<pair<int, pair<int, int> > > one_day_migrate_vm;
 		// 当天部署的虚拟机，服务器id->节点
 		vector<pair<int, int>> one_day_create_vm;
+
+		cpu_sorted_server.sort(cpu_cmp);
+		cpu_re_sorted_server.sort(cpu_re_cmp);
+		//迁移虚拟机
+		one_day_migrate_vm = MigrateVM(vm_count, vm_infos, vm_runs, server_resources, server_runs, server_closes, cpu_sorted_server, cpu_re_sorted_server);
+
+
 		for (auto itv = it->cbegin(); itv != it->cend(); ++itv) {
 			if (itv->op_type == ADD) {
+				++vm_count;
 				pair<int, int>create_vm = CreateVM(itv->vm_id, itv->vm_type, vm_infos, vm_runs,
-					server_resources, server_runs, server_closes);
+					server_resources, server_runs, server_closes, cpu_sorted_server);
 				// 当服务器资源不够创建虚拟机时
 				if (create_vm.second == -1) {
 					PurchaseServer(buy_server_type, server_number, server_infos, server_resources,
-						server_closes, BUYCOST, TOTALCOST);
+						server_closes, cpu_re_sorted_server, cpu_sorted_server, BUYCOST, TOTALCOST);
 					// 在当天购买服务器字典里加入刚买的服务器
 					if (one_day_purchase.find(buy_server_type) == one_day_purchase.end()) {
 						one_day_purchase[buy_server_type] = 1;
@@ -79,19 +99,21 @@ int main(int argc, char **argv){
 					}
 					// 再次尝试创建虚拟机
 					create_vm = CreateVM(itv->vm_id, itv->vm_type, vm_infos, vm_runs,
-						server_resources, server_runs, server_closes);
+						server_resources, server_runs, server_closes, cpu_sorted_server);
 				}
 				one_day_create_vm.push_back(create_vm);
 			}
 			else {
+				--vm_count;
 				vm_runs[itv->vm_id].Del(vm_infos, vm_runs, server_resources,
 					server_runs, server_closes);
 			}
+			
 		}
 
 		// 输出
 		PrintPurchase(one_day_purchase);
-		PrintMigration();
+		PrintMigration(one_day_migrate_vm);
 		PrintDeploy(one_day_create_vm);
 	}
 
@@ -130,10 +152,10 @@ int main(int argc, char **argv){
 
 // 输出购买服务器
 void PrintPurchase(unordered_map<string, int>& one_day_purchase) {
-	int server_kind_num = 0;
-	for (auto it = one_day_purchase.cbegin(); it != one_day_purchase.cend(); ++it) {
-		++server_kind_num;
-	}
+	int server_kind_num = one_day_purchase.size();
+	//for (auto it = one_day_purchase.cbegin(); it != one_day_purchase.cend(); ++it) {
+	//	++server_kind_num;
+	//}
 	cout << '(' << "purchase," << server_kind_num << ')' << endl;
 	for (auto it = one_day_purchase.cbegin(); it != one_day_purchase.cend(); ++it) {
 		cout << '(' << it->first << "," << it->second << ')' << endl;
@@ -141,8 +163,19 @@ void PrintPurchase(unordered_map<string, int>& one_day_purchase) {
 }
 
 // 输出迁移
-void PrintMigration() {
-	cout << '(' << "migration," << 0 << ')' << endl;
+void PrintMigration(vector<pair<int, pair<int, int> > >& one_day_migrate_vm) {
+	int nums = one_day_migrate_vm.size();
+	cout << '(' << "migration," << nums << ')' << endl;
+	for (auto it = one_day_migrate_vm.begin(); it != one_day_migrate_vm.cend(); ++it) {
+		if ((*it).second.second == -1) {
+			cout << '(' << (*it).first << ',' << (*it).second.first << ')' << endl;
+		}
+		else {
+			char node = 'A' + (*it).second.second;
+			cout << '(' << (*it).first << ',' << (*it).second.first << ','<<node<< ')' << endl;
+		}
+	}
+
 }
 
 // 输出服务器部署
@@ -158,4 +191,20 @@ void PrintDeploy(vector<pair<int, int>> one_day_create_vm) {
 			cout << '(' << it->first << ",B" << ')' << endl;
 		}
 	}
+}
+
+bool cpu_re_cmp(Server* first, Server* second) {
+	int first_cpu = (*first).get_node('a').cpu_used + (*first).get_node('b').cpu_used;
+	int second_cpu = (*second).get_node('a').cpu_used + (*second).get_node('b').cpu_used;
+	int first_mem = (*first).get_node('a').mem_used + (*first).get_node('b').mem_used;
+	int second_mem = (*second).get_node('a').mem_used + (*second).get_node('b').mem_used;
+	if (first_cpu == second_cpu) {
+		return first_mem < second_mem;
+	}
+	return first_cpu < second_cpu;
+}
+bool cpu_cmp(Server* first, Server* second){
+	int first_cpu = (*first).get_node('a').cpu_used + (*first).get_node('b').cpu_used;
+	int second_cpu = (*second).get_node('a').cpu_used + (*second).get_node('b').cpu_used;
+	return first_cpu > second_cpu;
 }

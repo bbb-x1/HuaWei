@@ -38,9 +38,10 @@ void Server::_Close(unordered_map<int, Server*>& server_runs,
 
 
 // 增加服务器负载
-int Server::IncreaseUse(int cpu, int mem, char node, 
+int Server::IncreaseUse(int vm_id, int cpu, int mem, char node,
 	unordered_map<int, Server*>& server_runs,
 	unordered_map<int, Server*>& server_closes) {
+
 	// 增加负载前服务器空，则开机
 	if (this->a.cpu_used == 0 && this->a.mem_used == 0
 		&& this->b.cpu_used == 0 && this->b.mem_used == 0)
@@ -66,9 +67,10 @@ int Server::IncreaseUse(int cpu, int mem, char node,
 
 
 // 减少服务器负载
-int Server::DecreaseUse(int cpu, int mem, char node,
+int Server::DecreaseUse(int vm_id, int cpu, int mem, char node,
 	unordered_map<int, Server*>& server_runs,
 	unordered_map<int, Server*>& server_closes) {
+	
 	if (node == 'a') {
 		this->a.cpu_res += cpu;
 		this->a.cpu_used -= cpu;  // 增加剩余，减少使用
@@ -106,11 +108,15 @@ void PurchaseServer(string& server_str, int &server_number,
 	unordered_map<string, ServerInfo> &server_infos, 
 	unordered_map<int, Server>& server_resources,
 	unordered_map<int, Server*>& server_closes,
+	list<Server*>& cpu_re_sorted_server,
+	list<Server*>& cpu_sorted_server,
 	long long& BUYCOST, long long& TOTALCOST) {
 	int sn = server_number;
 	Server purchased_server(server_str, sn, server_infos[server_str].cpu, server_infos[server_str].mem);
 	server_resources[sn] = purchased_server;
 	server_closes[sn] = &server_resources[sn];
+	cpu_re_sorted_server.push_back(&server_resources[sn]);
+	cpu_sorted_server.push_back(&server_resources[sn]);
 	++server_number;
 	BUYCOST += server_infos[server_str].buy_cost;
 	TOTALCOST += server_infos[server_str].buy_cost;
@@ -148,3 +154,12 @@ string SelectPurchaseServer(double mem_cpu_ratio, unordered_map<string, ServerIn
 
 	return result_server;
 }
+
+//string SelectPurchaseServer_1(double mem_cpu_ratio, unordered_map<string, ServerInfo> server_infos) {
+//	string result_server;
+//
+//	for (auto iter = server_infos.cbegin(); iter != server_infos.cend(); ++iter) {
+//
+//	}
+//
+//}
