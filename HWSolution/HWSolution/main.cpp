@@ -13,7 +13,7 @@ using namespace std;
 
 
 // 测试数据文件
-const string kFilePath = "resource/training-2.txt";
+const string kFilePath = "resource/training-1.txt";
 
 // 服务器信息
 unordered_map<string, ServerInfo> server_infos;
@@ -53,6 +53,7 @@ void PrintMigration(vector<pair<int, pair<int, int> > >& one_day_migrate_vm);
 void PrintDeploy(vector<pair<int, int> >);
 bool cpu_re_cmp(Server* first, Server* second);
 bool cpu_cmp(Server* first, Server* second);
+void Caculator();
 
 int main(int argc, char **argv){
 
@@ -110,13 +111,16 @@ int main(int argc, char **argv){
 			}
 			
 		}
-
+		Caculator();
 		// 输出
-		PrintPurchase(one_day_purchase);
-		PrintMigration(one_day_migrate_vm);
-		PrintDeploy(one_day_create_vm);
+		cout << "总成本为:" << TOTALCOST << endl;
+		//PrintPurchase(one_day_purchase);
+		//PrintMigration(one_day_migrate_vm);
+		//PrintDeploy(one_day_create_vm);
 	}
 
+	getchar();
+	system("pause");
 	return 0;
 }
 
@@ -149,6 +153,14 @@ int main(int argc, char **argv){
 //		cout << '(' << "purchase," << 0 << ')' << endl;
 //	}
 //}
+
+void Caculator()
+{
+	for (auto it = server_runs.begin(); it != server_runs.end(); it++)
+	{
+		TOTALCOST += server_infos[it->second->type_].day_power_cost;
+	}
+}
 
 // 输出购买服务器
 void PrintPurchase(unordered_map<string, int>& one_day_purchase) {
