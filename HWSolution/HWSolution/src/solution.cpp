@@ -24,10 +24,11 @@ Solution::Solution(unordered_map<string, ServerInfo> server_infos,
 
 	for (auto itv = it->cbegin(); itv != it->cend(); ++itv) {
 		if (itv->op_type == ADD) {
-			pair<int, int>create_vm = CreateVM(itv->vm_id, itv->vm_type, vm_infos, vm_runs_,
+			// 尝试创建虚拟机，拿到这个虚拟机所有能分配的(服务器，节点)
+			vector<pair<int, int>>all_create_choice = CreateVM(itv->vm_id, itv->vm_type, vm_infos, vm_runs_,
 				server_resources_, server_runs_, server_closes_);
 			// 当服务器资源不够创建虚拟机时
-			if (create_vm.second == -1) {
+			if (all_create_choice.size() == 0) {
 				PurchaseServer(buy_server_type, server_number_, server_infos, server_resources_,
 					server_closes_);
 				day_cost_ += server_infos[buy_server_type].buy_cost;  // 增加购买成本
@@ -38,12 +39,19 @@ Solution::Solution(unordered_map<string, ServerInfo> server_infos,
 				else {
 					one_day_purchase_[buy_server_type]++;
 				}
-				// 再次尝试创建虚拟机
-				create_vm = CreateVM(itv->vm_id, itv->vm_type, vm_infos, vm_runs_,
+				// 再次尝试创建虚拟机，拿到这个虚拟机所有能分配的(服务器，节点)
+				all_create_choice = CreateVM(itv->vm_id, itv->vm_type, vm_infos, vm_runs_,
 					server_resources_, server_runs_, server_closes_);
 			}
-			one_day_create_vm_.push_back(create_vm);
+			// 从所有能分配的(服务器，节点)中随机选择一个分配
+			std::default_random_engine random(time(NULL));
+			std::uniform_int_distribution<int> dis1(0, all_create_choice.size()-1);
+			int rand_num = dis1(random);
+			vm_runs_[itv->vm_id].Add((all_create_choice[rand_num]).first, all_create_choice[rand_num].second, vm_infos,
+				server_resources_, server_runs_, server_closes_);
+			one_day_create_vm_.push_back(all_create_choice[rand_num]);
 		}
+		// 当request是删除时
 		else {
 			vm_runs_[itv->vm_id].Del(vm_infos, vm_runs_, server_resources_,
 				server_runs_, server_closes_);

@@ -46,14 +46,18 @@ int Server::IncreaseUse(int cpu, int mem, char node,
 		&& this->b.cpu_used == 0 && this->b.mem_used == 0)
 		_Open(server_runs, server_closes);
 	if (node == 'a') {
+		assert(this->a.cpu_res - cpu >= 0);
 		this->a.cpu_res -= cpu;
 		this->a.cpu_used += cpu;  // 减少剩余，增加使用
+		assert(this->a.mem_res - mem >= 0);
 		this->a.mem_res -= mem;
 		this->a.mem_used += mem;
 	}
 	else if (node == 'b') {
+		assert(this->b.cpu_res - cpu >= 0);
 		this->b.cpu_res -= cpu;
 		this->b.cpu_used += cpu;
+		assert(this->b.mem_res - mem >= 0);
 		this->b.mem_res -= mem;
 		this->b.mem_used += mem;
 	}
@@ -71,14 +75,18 @@ int Server::DecreaseUse(int cpu, int mem, char node,
 	unordered_map<int, Server*>& server_closes) {
 	if (node == 'a') {
 		this->a.cpu_res += cpu;
+		assert(this->a.cpu_used - cpu >= 0);
 		this->a.cpu_used -= cpu;  // 增加剩余，减少使用
 		this->a.mem_res += mem;
+		assert(this->a.mem_used - mem >= 0);
 		this->a.mem_used -= mem;
 	}
 	else if (node == 'b') {
 		this->b.cpu_res += cpu;
+		assert(this->b.cpu_used - cpu >= 0);
 		this->b.cpu_used -= cpu;
 		this->b.mem_res += mem;
+		assert(this->b.mem_used - mem >= 0);
 		this->b.mem_used -= mem;
 	}
 	else {

@@ -95,6 +95,7 @@ int main(int argc, char **argv){
 		solution_vec.shrink_to_fit();
 	}
 
+	cout << "Total cost = " << TOTALCOST << endl;
 	return 0;
 }
 

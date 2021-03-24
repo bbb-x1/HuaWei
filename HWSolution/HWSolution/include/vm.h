@@ -19,7 +19,7 @@ public:
     string vm_str_;     //虚拟机型号
 
     int sv_id_;       //所在服务器ID
-    int sv_node_ = -1;     //所在服务器节点，=0时在A节点，=1时在B节点, =-1时双结点部署
+    int sv_node_  = 0;     //所在服务器节点，=0时在A节点，=1时在B节点, =-1时双结点部署
    
     VM();
     VM(int vm_id, string vm_str);
@@ -43,14 +43,15 @@ public:
     //void PMigration();      //输出该虚拟机迁移情况
 };
 
-//void CreateVM(int vm_id, string vm_str,
+
+//pair<int, int> CreateVM(int vm_id, string vm_str,
 //    unordered_map<string, VMInfo>& vm_infos,
 //    unordered_map<int, VM>& vm_runs,
 //    unordered_map<int, Server>& server_resources,
 //    unordered_map<int, Server*>& server_runs,
 //    unordered_map<int, Server*>& server_closes);
 
-pair<int, int> CreateVM(int vm_id, string vm_str,
+vector<pair<int, int>> CreateVM(int vm_id, string vm_str,
     unordered_map<string, VMInfo>& vm_infos,
     unordered_map<int, VM>& vm_runs,
     unordered_map<int, Server>& server_resources,
