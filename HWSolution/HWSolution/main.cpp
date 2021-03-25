@@ -40,7 +40,7 @@ unordered_map<int, VM> vm_runs;
 vector<vector<Request> > requests_set;
 
 //以服务器已用cpu排序的服务器列表(大到小)
-list<Server*> cpu_sorted_server;;
+list<Server*> cpu_sorted_server;
 //以服务器已用cpu排序的服务器列表(小到大)
 list<Server*> cpu_re_sorted_server;
 
@@ -61,8 +61,22 @@ int main(int argc, char **argv){
 	InitializeData(server_infos, vm_infos, requests_set, kFilePath);
 	double mem_cpu_ratio = StatisticInfo(vm_infos, requests_set);
 
+	// 拿到虚拟机里最大的cpu和内存需求
+	int single_need_cpu = 0;
+	int single_need_mem = 0;
+	for (auto& it : vm_infos){
+		if (it.second.dual_node == 0) {
+			if (it.second.cpu > single_need_cpu){
+				single_need_cpu = it.second.cpu;
+			}
+			if (it.second.mem > single_need_mem) {
+				single_need_mem = it.second.mem;
+			}
+		}
+	}
+
 	// 要购买的服务器类型
-	string buy_server_type = SelectPurchaseServer(mem_cpu_ratio,server_infos);
+	string buy_server_type = SelectPurchaseServer(mem_cpu_ratio,server_infos, single_need_cpu, single_need_mem);
 	//每天的工作
 	int day = 0;  // 天数
 	for (auto it = requests_set.cbegin(); it != requests_set.cend(); ++it) {
@@ -88,7 +102,7 @@ int main(int argc, char **argv){
 				pair<int, int>create_vm = CreateVM(itv->vm_id, itv->vm_type, vm_infos, vm_runs,
 					server_resources, server_runs, server_closes, cpu_sorted_server);
 				// 当服务器资源不够创建虚拟机时
-				if (create_vm.second == -1) {
+				while (create_vm.second == -1) {
 					PurchaseServer(buy_server_type, server_number, server_infos, server_resources,
 						server_closes, cpu_re_sorted_server, cpu_sorted_server, BUYCOST, TOTALCOST);
 					// 在当天购买服务器字典里加入刚买的服务器
@@ -119,8 +133,6 @@ int main(int argc, char **argv){
 		//PrintDeploy(one_day_create_vm);
 	}
 
-	getchar();
-	system("pause");
 	return 0;
 }
 
@@ -154,8 +166,7 @@ int main(int argc, char **argv){
 //	}
 //}
 
-void Caculator()
-{
+void Caculator(){
 	for (auto it = server_runs.begin(); it != server_runs.end(); it++)
 	{
 		TOTALCOST += server_infos[it->second->type_].day_power_cost;

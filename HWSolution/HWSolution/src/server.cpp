@@ -126,7 +126,10 @@ bool sort_compare(const pair<string, double>& item1, const pair<string, double>&
 	return item1.second < item2.second;
 }
 
-string SelectPurchaseServer(double mem_cpu_ratio, unordered_map<string, ServerInfo> server_infos) {
+
+string SelectPurchaseServer(double mem_cpu_ratio, 
+	unordered_map<string, ServerInfo> server_infos, 
+	int single_need_cpu, int single_need_mem) {
 	string max_server_name;
 	int sever_map_len = server_infos.size();
 	vector<pair<string, double>> ratio_array(sever_map_len);
@@ -144,6 +147,8 @@ string SelectPurchaseServer(double mem_cpu_ratio, unordered_map<string, ServerIn
 	double min = double(server_infos[result_server].buy_cost) / (double(server_infos[result_server].cpu) + server_infos[result_server].mem);
 	int limit = 5;
 	for (auto iter = rivet + 1; iter != ratio_array.end() && limit!=0; ++iter) {
+		if (server_infos[iter->first].cpu < single_need_cpu *2 || server_infos[iter->first].mem < single_need_mem*2)
+			continue;
 		double current_min = double(server_infos[(*iter).first].buy_cost) / (double(server_infos[(*iter).first].cpu) + server_infos[(*iter).first].mem);
 		if (min > current_min) {
 			min = current_min;
@@ -154,12 +159,3 @@ string SelectPurchaseServer(double mem_cpu_ratio, unordered_map<string, ServerIn
 
 	return result_server;
 }
-
-//string SelectPurchaseServer_1(double mem_cpu_ratio, unordered_map<string, ServerInfo> server_infos) {
-//	string result_server;
-//
-//	for (auto iter = server_infos.cbegin(); iter != server_infos.cend(); ++iter) {
-//
-//	}
-//
-//}

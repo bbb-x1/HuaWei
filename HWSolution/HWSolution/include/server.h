@@ -53,4 +53,4 @@ void PurchaseServer(string& server_str, int& server_number,
 	list<Server*>& cpu_sorted_server,
 	long long& BUYCOST, long long& TOTALCOST);
 
-string SelectPurchaseServer(double mem_cpu_ratio, unordered_map<string, ServerInfo> server_infos);
+string SelectPurchaseServer(double mem_cpu_ratio, unordered_map<string, ServerInfo> server_infos, int single_need_cpu, int single_need_mem);
