@@ -126,7 +126,7 @@ bool sort_compare(const pair<string, double>& item1, const pair<string, double>&
 	return item1.second < item2.second;
 }
 
-string SelectPurchaseServer(double mem_cpu_ratio, unordered_map<string, ServerInfo> server_infos) {
+vector<string> SelectPurchaseServer(double mem_cpu_ratio, unordered_map<string, ServerInfo> server_infos) {
 	string max_server_name;
 	int sever_map_len = server_infos.size();
 	vector<pair<string, double>> ratio_array(sever_map_len);
@@ -151,8 +151,23 @@ string SelectPurchaseServer(double mem_cpu_ratio, unordered_map<string, ServerIn
 		}
 		--limit;
 	}
-
-	return result_server;
+	limit = 5;
+	string min_result_server = (*rivet).first;
+	min = double(server_infos[result_server].buy_cost) / (double(server_infos[result_server].cpu) + server_infos[result_server].mem);
+	for (auto iter = rivet - 1; iter != ratio_array.begin() && limit != 0; --iter)
+	{
+		double current_min = double(server_infos[(*iter).first].buy_cost) / (double(server_infos[(*iter).first].cpu) + server_infos[(*iter).first].mem);
+		if (min > current_min)
+		{
+			min = current_min;
+			min_result_server = (*iter).first;
+		}
+		--limit;
+	}
+	vector<string> ans;
+	ans.push_back(result_server);
+	ans.push_back(min_result_server);
+	return ans;
 }
 
 //string SelectPurchaseServer_1(double mem_cpu_ratio, unordered_map<string, ServerInfo> server_infos) {

@@ -62,7 +62,8 @@ int main(int argc, char **argv){
 	double mem_cpu_ratio = StatisticInfo(vm_infos, requests_set);
 
 	// 要购买的服务器类型
-	string buy_server_type = SelectPurchaseServer(mem_cpu_ratio,server_infos);
+	bool purchase_first_server_type = true;
+	vector<string> buy_server_type_vec = SelectPurchaseServer(mem_cpu_ratio,server_infos);
 	//每天的工作
 	int day = 0;  // 天数
 	for (auto it = requests_set.cbegin(); it != requests_set.cend(); ++it) {
@@ -89,6 +90,17 @@ int main(int argc, char **argv){
 					server_resources, server_runs, server_closes, cpu_sorted_server);
 				// 当服务器资源不够创建虚拟机时
 				if (create_vm.second == -1) {
+					string buy_server_type;
+					if (purchase_first_server_type)
+					{
+						buy_server_type = buy_server_type_vec[0];
+						purchase_first_server_type = false;
+					}
+					else
+					{
+						buy_server_type = buy_server_type_vec[1];
+						purchase_first_server_type = true;
+					}
 					PurchaseServer(buy_server_type, server_number, server_infos, server_resources,
 						server_closes, cpu_re_sorted_server, cpu_sorted_server, BUYCOST, TOTALCOST);
 					// 在当天购买服务器字典里加入刚买的服务器
