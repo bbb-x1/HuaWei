@@ -61,3 +61,11 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
     list<Server*>& cpu_sorted_server);
 
 
+// 输入服务器id，创建1台虚拟机
+pair<int, int> CreateOneVM(int vm_id, string vm_str,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
+    int sv_id,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes);
