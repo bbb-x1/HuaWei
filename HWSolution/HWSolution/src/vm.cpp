@@ -216,7 +216,7 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
         pre_server.push_back(*iter_output);
         ++iter_output;
         ++iter_temp;
-        if (iter_temp != iter_empty && path % 11 == 0) {
+        if (iter_temp != iter_empty && path % 10 == 0) {
             ++iter_temp;
         }
         ++path;
@@ -238,7 +238,7 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
         });
 
 
-    for (auto output_iter = vm_output.begin(); output_iter != vm_output.end(); output_iter = vm_output.erase(output_iter)) {
+    for (auto output_iter = vm_output.begin();  mig_nums < max_nums && output_iter != vm_output.end(); output_iter = vm_output.erase(output_iter)) {
         //虚拟机信息
         int vm_id = (*output_iter).first;
         string vm_str = vm_runs[vm_id].vm_str_;
@@ -291,7 +291,6 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
             if ((*iter_s)->get_node('a').cpu_res == 0 && (*iter_s)->get_node('b').cpu_res == 0) {
                 pre_server.erase(iter_s);
             }
-            b_temp = result.size();
         }
         else {
             //从利用率低的服务器开始迁移
