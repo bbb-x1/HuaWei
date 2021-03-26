@@ -109,14 +109,12 @@ void PurchaseServer(string& server_str, int &server_number,
 	unordered_map<int, Server>& server_resources,
 	unordered_map<int, Server*>& server_closes,
 	list<Server*>& cpu_sorted_server,
-	list<Server*>& new_server,
 	long long& BUYCOST, long long& TOTALCOST) {
 	int sn = server_number;
 	Server purchased_server(server_str, sn, server_infos[server_str].cpu, server_infos[server_str].mem);
 	server_resources[sn] = purchased_server;
 	server_closes[sn] = &server_resources[sn];
 	cpu_sorted_server.push_back(&server_resources[sn]);
-	new_server.push_back(&server_resources[sn]);
 	++server_number;
 	BUYCOST += server_infos[server_str].buy_cost;
 	TOTALCOST += server_infos[server_str].buy_cost;

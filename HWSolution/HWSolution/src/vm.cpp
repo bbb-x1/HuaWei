@@ -214,10 +214,6 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
     }
 
 
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
     //从利用率低的服务器开始迁移
     for (auto iter_r_s = iter_re_empty; mig_nums < max_nums && iter_r_s != iter_re_full; ++iter_r_s) {
 
@@ -227,8 +223,11 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
         //    ||( (*iter_r_s)->get_node('a').mem_res == 0 && (*iter_r_s)->get_node('b').mem_res == 0)){
         //    continue;
         //}
-        if ((*iter_r_s)->get_node('a').cpu_res < 10 && (*iter_r_s)->get_node('b').cpu_res < 10
-            || (*iter_r_s)->get_node('a').mem_res < 10 && (*iter_r_s)->get_node('b').mem_res < 10) {
+        //if ((*iter_r_s)->get_node('a').cpu_res < 7 && (*iter_r_s)->get_node('b').cpu_res < 7
+        //    || (*iter_r_s)->get_node('a').mem_res < 7 && (*iter_r_s)->get_node('b').mem_res < 7) {
+        //    continue;
+        //}
+        if ((*iter_r_s)->get_node('a').cpu_res < 13 && (*iter_r_s)->get_node('b').cpu_res < 13) {
             continue;
         }
 
