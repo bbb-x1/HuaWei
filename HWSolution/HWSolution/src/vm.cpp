@@ -262,6 +262,16 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
         }
         ++iter_re_full;
     }
+    //方向第一个不空的服务器
+    auto iter_re_empty = cpu_sorted_server.rbegin();
+    while (iter_re_empty != cpu_sorted_server.rend()) {
+
+        if ((*iter_re_empty)->get_node('a').cpu_res != 0 || (*iter_re_empty)->get_node('b').cpu_res != 0) {
+            break;
+        }
+        ++iter_re_empty;
+    }
+
     //正向第一个不满的服务器
     auto iter_full = cpu_sorted_server.begin();
     while (iter_full != cpu_sorted_server.end()) {
@@ -274,17 +284,20 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
 
 
 
-
     //从利用率低的服务器开始迁移
-    for (auto iter_r_s = cpu_sorted_server.rbegin(); mig_nums < max_nums && iter_r_s != iter_re_full; ++iter_r_s) {
+    for (auto iter_r_s = iter_re_empty; mig_nums < max_nums && iter_r_s != iter_re_full; ++iter_r_s) {
 
-        //服务器无虚拟机，则下一台
-        if ((*iter_r_s)->own_vm.empty()) {
+        ////服务器无虚拟机或服务器满，则下一台
+        //if ( (*iter_r_s)->own_vm.empty()
+        //    ||( (*iter_r_s)->get_node('a').cpu_res==0 && (*iter_r_s)->get_node('b').cpu_res == 0)
+        //    ||( (*iter_r_s)->get_node('a').mem_res == 0 && (*iter_r_s)->get_node('b').mem_res == 0)){
+        //    continue;
+        //}
+        if ((*iter_r_s)->get_node('a').cpu_res < 10 && (*iter_r_s)->get_node('b').cpu_res < 10
+            || (*iter_r_s)->get_node('a').mem_res < 10 && (*iter_r_s)->get_node('b').mem_res < 10) {
             continue;
         }
 
-        ////当前服务器的虚拟机数量
-        //int temp_num = (*iter_r_s)->own_vm.size();
         list<int> iter_int;
         for (auto iter = (*iter_r_s)->own_vm.begin(); iter != (*iter_r_s)->own_vm.end(); ++iter) {
             iter_int.push_back(*iter);
@@ -295,7 +308,7 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
         while (iter_v != iter_int.end() && mig_nums < max_nums) {
             //--temp_num;
 
-            int vm_id = vm_runs[*iter_v].vm_id_;
+            int vm_id = *iter_v;
             string vm_str = vm_runs[*iter_v].vm_str_;
             int s_id = vm_runs[*iter_v].sv_id_;
             int s_node = vm_runs[*iter_v].sv_node_;
@@ -303,48 +316,67 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
             //找到合适的服务器则为1
             int judge = 0;
 
-            //将虚拟机从服务器中去除
-            vm_runs[*iter_v].Del(vm_infos, vm_runs, server_resources, server_runs, server_closes);
 
-            VM vm(vm_id, vm_str);
-            vm_runs[vm_id] = vm;
-
+            int fit_server_id;
+            int fit_server_node;
             //找到合适的服务器插入
             for (auto iter_s = iter_full; iter_s != cpu_sorted_server.end(); ++iter_s) {
+                if ((*iter_s)->ID_ == s_id && s_node == -1) {
+                    break;
+                }
                 Node a = (*iter_s)->get_node('a');
                 Node b = (*iter_s)->get_node('b');
                 if (vm_infos[vm_str].dual_node == 1) {
                     if (a.cpu_res >= vm_infos[vm_str].cpu / 2 && a.mem_res >= vm_infos[vm_str].mem / 2
                         && b.cpu_res >= vm_infos[vm_str].cpu / 2 && b.mem_res >= vm_infos[vm_str].mem / 2) {
-                        vm_runs[vm_id].Add((*iter_s)->ID_, -1, vm_infos, vm_runs, server_resources, server_runs, server_closes);
-                        if (s_id != vm_runs[vm_id].sv_id_) {
-                            result.push_back(make_pair(vm_id, make_pair(vm_runs[vm_id].sv_id_, vm_runs[vm_id].sv_node_)));
-                            ++mig_nums;
+                        fit_server_id = (*iter_s)->ID_;
+                        fit_server_node = -1;
+                        
+                        if (s_id != (*iter_s)->ID_) {
+                            judge = 1;
                         }
                         break;
                     }
                 }
                 else {
+                    if ((*iter_s)->ID_ == s_id && s_node == 0) {
+                        break;
+                    }
                     if (a.cpu_res >= vm_infos[vm_str].cpu && a.mem_res >= vm_infos[vm_str].mem) {
-                        vm_runs[vm_id].Add((*iter_s)->ID_, 0, vm_infos, vm_runs, server_resources, server_runs, server_closes);
-                        if (s_id != vm_runs[vm_id].sv_id_ || (s_id == vm_runs[vm_id].sv_id_ && s_node != vm_runs[vm_id].sv_node_)) {
-                            result.push_back(make_pair(vm_id, make_pair(vm_runs[vm_id].sv_id_, vm_runs[vm_id].sv_node_)));
-                            ++mig_nums;
+                        fit_server_id = (*iter_s)->ID_;
+                        fit_server_node = 0;
+                        
+                        if (s_id != (*iter_s)->ID_ || (s_id == (*iter_s)->ID_ && s_node != 0)) {
+                            judge = 1;
                         }
                         break;
 
                     }
+                    if ((*iter_s)->ID_ == s_id && s_node == 1) {
+                        break;
+                    }
                     if (b.cpu_res >= vm_infos[vm_str].cpu && b.mem_res >= vm_infos[vm_str].mem) {
-                        vm_runs[vm_id].Add((*iter_s)->ID_, 1, vm_infos, vm_runs, server_resources, server_runs, server_closes);
-                        if (s_id != vm_runs[vm_id].sv_id_ || (s_id == vm_runs[vm_id].sv_id_ && s_node != vm_runs[vm_id].sv_node_)) {
-                            result.push_back(make_pair(vm_id, make_pair(vm_runs[vm_id].sv_id_, vm_runs[vm_id].sv_node_)));
-                            ++mig_nums;
+                        fit_server_id = (*iter_s)->ID_;
+                        fit_server_node = 1;
+                        if (s_id != (*iter_s)->ID_ || (s_id == (*iter_s)->ID_ && s_node != 1)) {
+                            judge = 1;
                         }
                         break;
                     }
                 }
             }
+            
+            if (judge == 1) {
+                vm_runs[vm_id].Del(vm_infos, vm_runs, server_resources, server_runs, server_closes);
 
+                VM vm(vm_id, vm_str);
+                vm_runs[vm_id] = vm;
+                vm_runs[vm_id].Add(fit_server_id, fit_server_node, vm_infos, vm_runs, server_resources, server_runs, server_closes);
+
+                result.push_back(make_pair(vm_id, make_pair(fit_server_id, fit_server_node)));
+                ++mig_nums;
+            }
+            
             ++iter_v;
         }
     }
