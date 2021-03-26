@@ -41,8 +41,6 @@ vector<vector<Request> > requests_set;
 
 //以服务器已用cpu排序的服务器列表(大到小)
 list<Server*> cpu_sorted_server;
-//以服务器已用cpu排序的服务器列表(小到大)
-list<Server*> cpu_re_sorted_server;
 
 // 成本
 long long BUYCOST = 0, POWERCOST = 0, TOTALCOST = 0;
@@ -51,7 +49,6 @@ long long BUYCOST = 0, POWERCOST = 0, TOTALCOST = 0;
 void PrintPurchase(unordered_map<string, int>&);
 void PrintMigration(vector<pair<int, pair<int, int> > >& one_day_migrate_vm);
 void PrintDeploy(vector<pair<int, int> >);
-bool cpu_re_cmp(Server* first, Server* second);
 bool cpu_cmp(Server* first, Server* second);
 void Caculator();
 
@@ -91,10 +88,9 @@ int main(int argc, char **argv){
 		vector<pair<int, int>> one_day_create_vm;
 
 		cpu_sorted_server.sort(cpu_cmp);
-		cpu_re_sorted_server.sort(cpu_re_cmp);
 		//迁移虚拟机
-		one_day_migrate_vm = MigrateVM(vm_count, vm_infos, vm_runs, server_resources, server_runs, server_closes, cpu_sorted_server, cpu_re_sorted_server);
-
+		one_day_migrate_vm = MigrateVM(vm_count, vm_infos, vm_runs, server_resources, server_runs, server_closes, cpu_sorted_server);
+		cpu_sorted_server.sort(cpu_cmp);
 
 		for (auto itv = it->cbegin(); itv != it->cend(); ++itv) {
 			if (itv->op_type == ADD) {
@@ -104,7 +100,7 @@ int main(int argc, char **argv){
 				// 当服务器资源不够创建虚拟机时
 				while (create_vm.second == -1) {
 					PurchaseServer(buy_server_type, server_number, server_infos, server_resources,
-						server_closes, cpu_re_sorted_server, cpu_sorted_server, BUYCOST, TOTALCOST);
+						server_closes, cpu_sorted_server, BUYCOST, TOTALCOST);
 					// 在当天购买服务器字典里加入刚买的服务器
 					if (one_day_purchase.find(buy_server_type) == one_day_purchase.end()) {
 						one_day_purchase[buy_server_type] = 1;
