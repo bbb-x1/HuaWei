@@ -13,22 +13,6 @@ VM::VM(int vm_id, string vm_str) {
 
 }
 
-//void VM::PCreatRequest(){
-//    if(sv_node_ == -1){
-//        cout<<'('<<sv_id_<<')'<<endl;
-//    }else{
-//        cout<<'('<<sv_id_<<','<<'A'+sv_node_<<')'<<endl;
-//    }
-//}
-//
-//void VM::PMigration(){
-//    if(sv_node_ == -1){
-//        cout<<'('<<vm_id_<<','<<sv_id_<<')'<<endl;
-//    }else{
-//        cout<<'('<<vm_id_<<','<<sv_id_<<','<< 'A' + sv_node_ <<')'<<endl;
-//    }
-//}
-
 
 void VM::Add(int sv_id, int sv_node,
     unordered_map<string, VMInfo>& vm_infos,
@@ -213,7 +197,9 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
     list<Server*> post_server;
     int path = 0;
     while (iter_temp != iter_empty) {
-        pre_server.push_back(*iter_output);
+        if ((*iter_output)->get_node('a').mem_res != 0 || (*iter_output)->get_node('b').mem_res != 0) {
+            pre_server.push_back(*iter_output);
+        }
         ++iter_output;
         ++iter_temp;
         if (iter_temp != iter_empty && path % 10 == 0) {
@@ -222,7 +208,9 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
         ++path;
     }
     for (auto iter = iter_output; iter != iter_empty; ++iter) {
-        post_server.push_back(*iter);
+        if ((*iter)->get_node('a').mem_res != 0 || (*iter)->get_node('b').mem_res != 0) {
+            post_server.push_back(*iter);
+        }
     }
 
     //虚拟机迁移列表(cpu从小到大)
@@ -238,7 +226,7 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
         });
 
 
-    for (auto output_iter = vm_output.begin();  mig_nums < max_nums && output_iter != vm_output.end(); output_iter = vm_output.erase(output_iter)) {
+    for (auto output_iter = vm_output.begin(); mig_nums < max_nums && output_iter != vm_output.end(); output_iter = vm_output.erase(output_iter)) {
         //虚拟机信息
         int vm_id = (*output_iter).first;
         string vm_str = vm_runs[vm_id].vm_str_;
@@ -291,98 +279,90 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
             if ((*iter_s)->get_node('a').cpu_res == 0 && (*iter_s)->get_node('b').cpu_res == 0) {
                 pre_server.erase(iter_s);
             }
+            b_temp = result.size();
         }
         else {
-            //从利用率低的服务器开始迁移
-            for (auto iter_r_s = post_server.rbegin(); mig_nums < max_nums && iter_r_s != post_server.rend(); ++iter_r_s) {
-                ////服务器无虚拟机或服务器满，则下一台
-                //if ( (*iter_r_s)->own_vm.empty()
-                //    ||( (*iter_r_s)->get_node('a').cpu_res==0 && (*iter_r_s)->get_node('b').cpu_res == 0)
-                //    ||( (*iter_r_s)->get_node('a').mem_res == 0 && (*iter_r_s)->get_node('b').mem_res == 0)){
-                //    continue;
-                //}
-                //if ((*iter_r_s)->get_node('a').cpu_res < 7 && (*iter_r_s)->get_node('b').cpu_res < 7
-                //    || (*iter_r_s)->get_node('a').mem_res < 7 && (*iter_r_s)->get_node('b').mem_res < 7) {
-                //    continue;
-                //}
-                //if ((*iter_r_s)->get_node('a').cpu_res < 13 && (*iter_r_s)->get_node('b').cpu_res < 13) {
-                //    continue;
-                //}
-                list<int> iter_int;
-                for (auto iter = (*iter_r_s)->own_vm.begin(); iter != (*iter_r_s)->own_vm.end(); ++iter) {
-                    iter_int.push_back(*iter);
-                }
-                auto iter_v = iter_int.begin();
-                while (iter_v != iter_int.end() && mig_nums < max_nums) {
-                    //--temp_num;
-                    int vm_id = *iter_v;
-                    string vm_str = vm_runs[*iter_v].vm_str_;
-                    int s_id = vm_runs[*iter_v].sv_id_;
-                    int s_node = vm_runs[*iter_v].sv_node_;
-                    //找到合适的服务器则为1
-                    int judge = 0;
-                    int fit_server_id;
-                    int fit_server_node;
-                    //找到合适的服务器插入
-                    for (auto iter_s = post_server.begin(); iter_s != post_server.end(); ++iter_s) {
-                        if ((*iter_s)->ID_ == s_id && s_node == -1) {
-                            break;
-                        }
-                        Node a = (*iter_s)->get_node('a');
-                        Node b = (*iter_s)->get_node('b');
-                        if (vm_infos[vm_str].dual_node == 1) {
-                            if (a.cpu_res >= vm_infos[vm_str].cpu / 2 && a.mem_res >= vm_infos[vm_str].mem / 2
-                                && b.cpu_res >= vm_infos[vm_str].cpu / 2 && b.mem_res >= vm_infos[vm_str].mem / 2) {
-                                fit_server_id = (*iter_s)->ID_;
-                                fit_server_node = -1;
-
-                                if (s_id != (*iter_s)->ID_) {
-                                    judge = 1;
-                                }
-                                break;
-                            }
-                        }
-                        else {
-                            if ((*iter_s)->ID_ == s_id && s_node == 0) {
-                                break;
-                            }
-                            if (a.cpu_res >= vm_infos[vm_str].cpu && a.mem_res >= vm_infos[vm_str].mem) {
-                                fit_server_id = (*iter_s)->ID_;
-                                fit_server_node = 0;
-
-                                if (s_id != (*iter_s)->ID_ || (s_id == (*iter_s)->ID_ && s_node != 0)) {
-                                    judge = 1;
-                                }
-                                break;
-
-                            }
-                            if ((*iter_s)->ID_ == s_id && s_node == 1) {
-                                break;
-                            }
-                            if (b.cpu_res >= vm_infos[vm_str].cpu && b.mem_res >= vm_infos[vm_str].mem) {
-                                fit_server_id = (*iter_s)->ID_;
-                                fit_server_node = 1;
-                                if (s_id != (*iter_s)->ID_ || (s_id == (*iter_s)->ID_ && s_node != 1)) {
-                                    judge = 1;
-                                }
-                                break;
-                            }
-                        }
-                    }
-                    if (judge == 1) {
-                        vm_runs[vm_id].Del(vm_infos, vm_runs, server_resources, server_runs, server_closes);
-                        VM vm(vm_id, vm_str);
-                        vm_runs[vm_id] = vm;
-                        vm_runs[vm_id].Add(fit_server_id, fit_server_node, vm_infos, vm_runs, server_resources, server_runs, server_closes);
-                        result.push_back(make_pair(vm_id, make_pair(fit_server_id, fit_server_node)));
-                        ++mig_nums;
-                    }
-                    ++iter_v;
-                }
-            }
+            
+            cout << "************" << endl;
             break;
         }
 
     }
+    //从利用率低的服务器开始迁移
+    for (auto iter_r_s = post_server.rbegin(); mig_nums < max_nums && iter_r_s != post_server.rend(); ++iter_r_s) {
+        list<int> iter_int;
+        for (auto iter = (*iter_r_s)->own_vm.begin(); iter != (*iter_r_s)->own_vm.end(); ++iter) {
+            iter_int.push_back(*iter);
+        }
+        auto iter_v = iter_int.begin();
+        while (iter_v != iter_int.end() && mig_nums < max_nums) {
+            //--temp_num;
+            int vm_id = *iter_v;
+            string vm_str = vm_runs[*iter_v].vm_str_;
+            int s_id = vm_runs[*iter_v].sv_id_;
+            int s_node = vm_runs[*iter_v].sv_node_;
+            //找到合适的服务器则为1
+            int judge = 0;
+            int fit_server_id;
+            int fit_server_node;
+            //找到合适的服务器插入
+            for (auto iter_s = post_server.begin(); iter_s != post_server.end(); ++iter_s) {
+                if ((*iter_s)->ID_ == s_id && s_node == -1) {
+                    break;
+                }
+                Node a = (*iter_s)->get_node('a');
+                Node b = (*iter_s)->get_node('b');
+                if (vm_infos[vm_str].dual_node == 1) {
+                    if (a.cpu_res >= vm_infos[vm_str].cpu / 2 && a.mem_res >= vm_infos[vm_str].mem / 2
+                        && b.cpu_res >= vm_infos[vm_str].cpu / 2 && b.mem_res >= vm_infos[vm_str].mem / 2) {
+                        fit_server_id = (*iter_s)->ID_;
+                        fit_server_node = -1;
+
+                        if (s_id != (*iter_s)->ID_) {
+                            judge = 1;
+                        }
+                        break;
+                    }
+                }
+                else {
+                    if ((*iter_s)->ID_ == s_id && s_node == 0) {
+                        break;
+                    }
+                    if (a.cpu_res >= vm_infos[vm_str].cpu && a.mem_res >= vm_infos[vm_str].mem) {
+                        fit_server_id = (*iter_s)->ID_;
+                        fit_server_node = 0;
+
+                        if (s_id != (*iter_s)->ID_ || (s_id == (*iter_s)->ID_ && s_node != 0)) {
+                            judge = 1;
+                        }
+                        break;
+
+                    }
+                    if ((*iter_s)->ID_ == s_id && s_node == 1) {
+                        break;
+                    }
+                    if (b.cpu_res >= vm_infos[vm_str].cpu && b.mem_res >= vm_infos[vm_str].mem) {
+                        fit_server_id = (*iter_s)->ID_;
+                        fit_server_node = 1;
+                        if (s_id != (*iter_s)->ID_ || (s_id == (*iter_s)->ID_ && s_node != 1)) {
+                            judge = 1;
+                        }
+                        break;
+                    }
+                }
+            }
+            if (judge == 1) {
+                vm_runs[vm_id].Del(vm_infos, vm_runs, server_resources, server_runs, server_closes);
+                VM vm(vm_id, vm_str);
+                vm_runs[vm_id] = vm;
+                vm_runs[vm_id].Add(fit_server_id, fit_server_node, vm_infos, vm_runs, server_resources, server_runs, server_closes);
+                result.push_back(make_pair(vm_id, make_pair(fit_server_id, fit_server_node)));
+                ++mig_nums;
+            }
+            ++iter_v;
+        }
+    }
+
+    cout << result.size() - b_temp << endl;
     return result;
 }
