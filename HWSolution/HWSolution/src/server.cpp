@@ -108,14 +108,12 @@ void PurchaseServer(string& server_str, int &server_number,
 	unordered_map<string, ServerInfo> &server_infos, 
 	unordered_map<int, Server>& server_resources,
 	unordered_map<int, Server*>& server_closes,
-	list<Server*>& cpu_re_sorted_server,
 	list<Server*>& cpu_sorted_server,
 	long long& BUYCOST, long long& TOTALCOST) {
 	int sn = server_number;
 	Server purchased_server(server_str, sn, server_infos[server_str].cpu, server_infos[server_str].mem);
 	server_resources[sn] = purchased_server;
 	server_closes[sn] = &server_resources[sn];
-	cpu_re_sorted_server.push_back(&server_resources[sn]);
 	cpu_sorted_server.push_back(&server_resources[sn]);
 	++server_number;
 	BUYCOST += server_infos[server_str].buy_cost;
@@ -126,55 +124,50 @@ bool sort_compare(const pair<string, double>& item1, const pair<string, double>&
 	return item1.second < item2.second;
 }
 
-vector<string> SelectPurchaseServer(double mem_cpu_ratio, unordered_map<string, ServerInfo> server_infos) {
+
+string SelectPurchaseServer(double mem_cpu_ratio, 
+	unordered_map<string, ServerInfo> server_infos, 
+	int single_need_cpu, int single_need_mem) {
+
+	mem_cpu_ratio += 0.10;
 	string max_server_name;
 	int sever_map_len = server_infos.size();
-	vector<pair<string, double>> ratio_array(sever_map_len);
-	int index = 0;
+	vector<pair<string, double>> ratio_array;
 	for (auto iter = server_infos.cbegin(); iter != server_infos.cend(); ++iter) {
-		ratio_array[index].first = iter->first;
-		ratio_array[index].second = double(iter->second.mem) / double(iter->second.cpu);
-		++index;
+		//太小的服务器不考虑
+		if (iter->second.cpu < single_need_cpu * 2 || iter->second.mem < single_need_mem * 2) {
+			continue;
+		}
+
+		////服务器类型名
+		//ratio_array[index].first = iter->first;
+
+		if (  ( double(iter->second.mem) / double(iter->second.cpu) ) > mem_cpu_ratio ){
+			double actual_mem = double(iter->second.cpu) * mem_cpu_ratio;
+			ratio_array.push_back(make_pair(iter->first, double(iter->second.buy_cost) / (actual_mem + double(iter->second.cpu))));
+		}
+		else {
+			double actual_cpu = double(iter->second.mem) / mem_cpu_ratio;
+			ratio_array.push_back(make_pair(iter->first, double(iter->second.buy_cost) / (actual_cpu + double(iter->second.mem))));
+		}
+
+		//ratio_array[index].second = double(iter->second.mem) / double(iter->second.cpu);
 	}
 	sort(ratio_array.begin(),ratio_array.end(),sort_compare);
-
-	pair<string, double> temp = { " ", mem_cpu_ratio };
-	auto rivet = lower_bound(ratio_array.begin(), ratio_array.end(),temp,sort_compare);
-	string result_server = (*rivet).first;
-	double min = double(server_infos[result_server].buy_cost) / (double(server_infos[result_server].cpu) + server_infos[result_server].mem);
-	int limit = 5;
-	for (auto iter = rivet + 1; iter != ratio_array.end() && limit!=0; ++iter) {
-		double current_min = double(server_infos[(*iter).first].buy_cost) / (double(server_infos[(*iter).first].cpu) + server_infos[(*iter).first].mem);
-		if (min > current_min) {
-			min = current_min;
-			result_server = (*iter).first;
-		}
-		--limit;
-	}
-	limit = 5;
-	string min_result_server = (*rivet).first;
-	min = double(server_infos[result_server].buy_cost) / (double(server_infos[result_server].cpu) + server_infos[result_server].mem);
-	for (auto iter = rivet - 1; iter != ratio_array.begin() && limit != 0; --iter)
-	{
-		double current_min = double(server_infos[(*iter).first].buy_cost) / (double(server_infos[(*iter).first].cpu) + server_infos[(*iter).first].mem);
-		if (min > current_min)
-		{
-			min = current_min;
-			min_result_server = (*iter).first;
-		}
-		--limit;
-	}
-	vector<string> ans;
-	ans.push_back(result_server);
-	ans.push_back(min_result_server);
-	return ans;
+	//pair<string, double> temp = { " ", mem_cpu_ratio };
+	//auto rivet = lower_bound(ratio_array.begin(), ratio_array.end(),temp,sort_compare);
+	//string result_server = (*rivet).first;
+	//double min = double(server_infos[result_server].buy_cost) / (double(server_infos[result_server].cpu) + server_infos[result_server].mem);
+	//int limit = 5;
+	//for (auto iter = rivet + 1; iter != ratio_array.end() && limit!=0; ++iter) {
+	//	if (server_infos[iter->first].cpu < single_need_cpu *2 || server_infos[iter->first].mem < single_need_mem*2)
+	//		continue;
+	//	double current_min = double(server_infos[(*iter).first].buy_cost) / (double(server_infos[(*iter).first].cpu) + server_infos[(*iter).first].mem);
+	//	if (min > current_min) {
+	//		min = current_min;
+	//		result_server = (*iter).first;
+	//	}
+	//	--limit;
+	//}
+	return ratio_array[0].first;
 }
-
-//string SelectPurchaseServer_1(double mem_cpu_ratio, unordered_map<string, ServerInfo> server_infos) {
-//	string result_server;
-//
-//	for (auto iter = server_infos.cbegin(); iter != server_infos.cend(); ++iter) {
-//
-//	}
-//
-//}

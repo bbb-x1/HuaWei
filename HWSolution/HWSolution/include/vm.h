@@ -34,23 +34,15 @@ public:
         unordered_map<int, Server*>& server_closes);   
     
     
-    void Del(
+        void Del(
         unordered_map<string, VMInfo>& vm_infos,
         unordered_map<int, VM>& vm_runs,
         unordered_map<int, Server>& server_resources,
         unordered_map<int, Server*>& server_runs,
         unordered_map<int, Server*>& server_closes);
-
-    //void PCreatRequest();   //输出创建请求的部署情况
-    //void PMigration();      //输出该虚拟机迁移情况
 };
 
-//void CreateVM(int vm_id, string vm_str,
-//    unordered_map<string, VMInfo>& vm_infos,
-//    unordered_map<int, VM>& vm_runs,
-//    unordered_map<int, Server>& server_resources,
-//    unordered_map<int, Server*>& server_runs,
-//    unordered_map<int, Server*>& server_closes);
+
 
 pair<int, int> CreateVM(int vm_id, string vm_str,
     unordered_map<string, VMInfo>& vm_infos,
@@ -60,22 +52,20 @@ pair<int, int> CreateVM(int vm_id, string vm_str,
     unordered_map<int, Server*>& server_closes,
     list<Server*>& cpu_sorted_server);
 
-//将虚拟机vm迁移到服务器（sv_id）的sv_node节点
-void DispatchVM(VM vm, int sv_id, int sv_node,
-    unordered_map<string, VMInfo>& vm_infos,
-    unordered_map<int, VM>& vm_runs,
-    unordered_map<int, Server>& server_resources,
-    unordered_map<int, Server*>& server_runs,
-    unordered_map<int, Server*>& server_closes);
-
-
 vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
     unordered_map<string, VMInfo>& vm_infos,
     unordered_map<int, VM>& vm_runs,
     unordered_map<int, Server>& server_resources,
     unordered_map<int, Server*>& server_runs,
     unordered_map<int, Server*>& server_closes,
-    list<Server*>& cpu_sorted_server,
-    list<Server*>& cpu_re_sorted_server);
+    list<Server*>& cpu_sorted_server);
 
 
+// 输入服务器id，创建1台虚拟机
+pair<int, int> CreateOneVM(int vm_id, string vm_str,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
+    int sv_id,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes);
