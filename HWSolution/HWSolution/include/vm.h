@@ -9,18 +9,17 @@ using namespace std;
 typedef struct VirtualMachineInfo {
     int cpu = 0;            //CPU核数
     int mem = 0;         //内存大小
-    int dual_node;       //是否双节点部署
+    int dual_node = -1;       //是否双节点部署 0是单节点 1是双节点
 }VMInfo;
-
 
 class VM{
 
 public:
-    int vm_id_;       //虚拟机ID
-    string vm_str_;     //虚拟机型号
+    int vm_id_ = -1;       //虚拟机ID
+    string vm_str_ = " ";     //虚拟机型号
 
-    int sv_id_;       //所在服务器ID
-    int sv_node_ = -1;     //所在服务器节点，=0时在A节点，=1时在B节点, =-1时双结点部署
+    int sv_id_ = -1;       //所在服务器ID
+    int sv_node_ = -1;     //所在服务器节点，=0时在A节点，=1时在B节点, =2时双结点部署
    
     VM();
     VM(int vm_id, string vm_str);

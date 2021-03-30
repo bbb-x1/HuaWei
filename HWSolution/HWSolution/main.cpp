@@ -176,46 +176,16 @@ int main(int argc, char **argv){
 				server_runs, server_closes);
 		}
 
-		Caculator();
-		// 输出
-		cout << "总成本为:" << TOTALCOST << endl;
-		//PrintPurchase(one_day_purchase);
-		//PrintMigration(one_day_migrate_vm);
-		//PrintDeploy(one_day_create_vm);
+		//Caculator();
+		//// 输出
+		//cout << "总成本为:" << TOTALCOST << endl;
+		PrintPurchase(one_day_purchase);
+		PrintMigration(one_day_migrate_vm);
+		PrintDeploy(one_day_create_vm);
 	}
 
 	return 0;
 }
-
-//void Purchase(vector<vector<Request>>::const_iterator& it) {
-//	if (it== requests_set.cbegin()) {
-//		//统计数据
-//		pair<int, int> cpu_mem_needed = StatisticInfo(vm_infos, vm_runs, requests_set);
-//
-//		int max_buy_cost = 0;
-//		string max_server_name;
-//		for (auto i = server_infos.cbegin(); i != server_infos.cend(); ++i) {
-//			if (i->second.buy_cost > max_buy_cost) {
-//				max_buy_cost = i->second.buy_cost;
-//				max_server_name = i->first;
-//			}
-//		}
-//		int max_server = max(cpu_mem_needed.first / server_infos[max_server_name].cpu,
-//			cpu_mem_needed.second / server_infos[max_server_name].mem);
-//
-//
-//		for (int i = 0; i < max_server + 100; ++i) {
-//			PurchaseServer(max_server_name, server_number, server_infos,
-//				server_resources, server_closes, BUYCOST, TOTALCOST);
-//		}
-//
-//		cout << "purchase," << max_server << endl;
-//		cout << '(' << max_server_name << ',' << max_server << ')' << endl;
-//	}
-//	else {
-//		cout << '(' << "purchase," << 0 << ')' << endl;
-//	}
-//}
 
 void Caculator(){
 	for (auto it = server_runs.begin(); it != server_runs.end(); it++)
@@ -241,7 +211,7 @@ void PrintMigration(vector<pair<int, pair<int, int> > >& one_day_migrate_vm) {
 	int nums = one_day_migrate_vm.size();
 	cout << '(' << "migration," << nums << ')' << endl;
 	for (auto it = one_day_migrate_vm.begin(); it != one_day_migrate_vm.cend(); ++it) {
-		if ((*it).second.second == -1) {
+		if ((*it).second.second == 2) {
 			cout << '(' << (*it).first << ',' << (*it).second.first << ')' << endl;
 		}
 		else {
@@ -255,10 +225,10 @@ void PrintMigration(vector<pair<int, pair<int, int> > >& one_day_migrate_vm) {
 // 输出服务器部署
 void PrintDeploy(vector<pair<int, int>> one_day_create_vm) {
 	for (auto it = one_day_create_vm.cbegin(); it != one_day_create_vm.cend(); ++it) {
-		if (it->second == 0) {
+		if (it->second == 2) {
 			cout << '(' << it->first<< ')' << endl;
 		}
-		else if (it->second == 1) {
+		else if (it->second == 0) {
 			cout << '(' << it->first << ",A" << ')' << endl;
 		}
 		else {
@@ -266,17 +236,6 @@ void PrintDeploy(vector<pair<int, int>> one_day_create_vm) {
 		}
 	}
 }
-
-//bool cpu_re_cmp(Server* first, Server* second) {
-//	int first_cpu = (*first).get_node('a').cpu_used + (*first).get_node('b').cpu_used;
-//	int second_cpu = (*second).get_node('a').cpu_used + (*second).get_node('b').cpu_used;
-//	int first_mem = (*first).get_node('a').mem_used + (*first).get_node('b').mem_used;
-//	int second_mem = (*second).get_node('a').mem_used + (*second).get_node('b').mem_used;
-//	if (first_cpu == second_cpu) {
-//		return first_mem < second_mem;
-//	}
-//	return first_cpu < second_cpu;
-//}
 
 bool cpu_cmp(Server* first, Server* second){
 	int first_cpu = (*first).get_node('a').cpu_used + (*first).get_node('b').cpu_used;

@@ -25,7 +25,7 @@ void VM::Add(int sv_id, int sv_node,
     sv_node_ = sv_node;
 
     
-    if (sv_node == -1) {
+    if (sv_node == 2) {
         server_resources[sv_id].IncreaseUse(vm_id_, vm_infos[vm_str_].cpu / 2, vm_infos[vm_str_].mem / 2,'a',
             server_runs, server_closes);
         server_resources[sv_id].IncreaseUse(vm_id_, vm_infos[vm_str_].cpu / 2, vm_infos[vm_str_].mem / 2, 'b',
@@ -54,7 +54,7 @@ void VM::Del(
     unordered_map<int, Server>& server_resources,
     unordered_map<int, Server*>& server_runs,
     unordered_map<int, Server*>& server_closes) {
-    if (sv_node_ == -1) {
+    if (sv_node_ == 2) {
         server_resources[sv_id_].DecreaseUse(vm_id_,vm_infos[vm_str_].cpu / 2, vm_infos[vm_str_].mem / 2, 'a',
             server_runs, server_closes);
         server_resources[sv_id_].DecreaseUse(vm_id_,vm_infos[vm_str_].cpu / 2, vm_infos[vm_str_].mem / 2, 'b',
@@ -93,21 +93,21 @@ pair<int, int> CreateOneVM(int vm_id, string vm_str,
     if (vm_infos[vm_str].dual_node == 1) {
         if (a.cpu_res >= vm_infos[vm_str].cpu / 2 && a.mem_res >= vm_infos[vm_str].mem / 2
             && b.cpu_res >= vm_infos[vm_str].cpu / 2 && b.mem_res >= vm_infos[vm_str].mem / 2) {
-            vm_runs[vm_id].Add(sv_id, -1, vm_infos, vm_runs, server_resources, server_runs, server_closes);
-            // 0代表双节点虚拟机
-            return std::make_pair(vm_runs[vm_id].sv_id_, 0);
+            vm_runs[vm_id].Add(sv_id, 2, vm_infos, vm_runs, server_resources, server_runs, server_closes);
+            // 2代表双节点虚拟机
+            return std::make_pair(vm_runs[vm_id].sv_id_, 2);
         }
     }
     else {
         if (a.cpu_res >= vm_infos[vm_str].cpu && a.mem_res >= vm_infos[vm_str].mem) {
             vm_runs[vm_id].Add(sv_id, 0, vm_infos, vm_runs, server_resources, server_runs, server_closes);
-            // 1代表存放在A节点
-            return std::make_pair(vm_runs[vm_id].sv_id_, 1);
+            // 0代表存放在A节点
+            return std::make_pair(vm_runs[vm_id].sv_id_, 0);
         }
         if (b.cpu_res >= vm_infos[vm_str].cpu && b.mem_res >= vm_infos[vm_str].mem) {
             vm_runs[vm_id].Add(sv_id, 1, vm_infos, vm_runs, server_resources, server_runs, server_closes);
-            // 2代表存放在B节点
-            return std::make_pair(vm_runs[vm_id].sv_id_, 2);
+            // 1代表存放在B节点
+            return std::make_pair(vm_runs[vm_id].sv_id_, 1);
         }
     }
     return std::make_pair(-1, -1);
@@ -132,24 +132,24 @@ pair<int, int> CreateVM(int vm_id, string vm_str,
         if (vm_infos[vm_str].dual_node == 1) {
             if (a.cpu_res >= vm_infos[vm_str].cpu / 2 && a.mem_res >= vm_infos[vm_str].mem / 2
                 && b.cpu_res >= vm_infos[vm_str].cpu / 2 && b.mem_res >= vm_infos[vm_str].mem / 2) {
-                vm_runs[vm_id].Add((*i)->ID_, -1, vm_infos, vm_runs, server_resources, server_runs, server_closes);
+                vm_runs[vm_id].Add((*i)->ID_, 2, vm_infos, vm_runs, server_resources, server_runs, server_closes);
                 judge = 1;
-                // 0代表双节点虚拟机
-                return std::make_pair(vm_runs[vm_id].sv_id_, 0);
+                // 2代表双节点虚拟机
+                return std::make_pair(vm_runs[vm_id].sv_id_, 2);
             }
         }
         else {
             if (a.cpu_res >= vm_infos[vm_str].cpu && a.mem_res >= vm_infos[vm_str].mem) {
                 vm_runs[vm_id].Add((*i)->ID_, 0, vm_infos, vm_runs, server_resources, server_runs, server_closes);
                 judge = 1;
-                // 1代表存放在A节点
-                return std::make_pair(vm_runs[vm_id].sv_id_, 1);
+                // 0代表存放在A节点
+                return std::make_pair(vm_runs[vm_id].sv_id_, 0);
             }
             if (b.cpu_res >= vm_infos[vm_str].cpu && b.mem_res >= vm_infos[vm_str].mem) {
                 vm_runs[vm_id].Add((*i)->ID_, 1, vm_infos, vm_runs, server_resources, server_runs, server_closes);
                 judge = 1;
-                // 2代表存放在B节点
-                return std::make_pair(vm_runs[vm_id].sv_id_, 2);
+                // 1代表存放在B节点
+                return std::make_pair(vm_runs[vm_id].sv_id_, 1);
             }
         }
     }
@@ -168,7 +168,6 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
     vector<pair<int, pair<int, int> > > result;
     int max_nums = int(floor(vm_count * 0.005));
     int mig_nums = 0;
-    int b_temp = 0;
     //正向第一个不满的服务器
     auto iter_not_full = cpu_sorted_server.begin();
     while (iter_not_full != cpu_sorted_server.end()) {
@@ -257,7 +256,7 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
                 if (a.cpu_res >= vm_infos[vm_str].cpu / 2 && a.mem_res >= vm_infos[vm_str].mem / 2
                     && b.cpu_res >= vm_infos[vm_str].cpu / 2 && b.mem_res >= vm_infos[vm_str].mem / 2) {
                     judge_id = (*iter_s)->ID_;
-                    judge_node = -1;
+                    judge_node = 2;
                     judge_find = 1;
                     break;
                 }
@@ -318,7 +317,7 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
             int fit_server_node;
             //找到合适的服务器插入
             for (auto iter_s = post_server.begin(); iter_s != post_server.end(); ++iter_s) {
-                if ((*iter_s)->ID_ == s_id && s_node == -1) {
+                if ((*iter_s)->ID_ == s_id && s_node == 2) {
                     break;
                 }
                 Node a = (*iter_s)->get_node('a');
@@ -327,7 +326,7 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
                     if (a.cpu_res >= vm_infos[vm_str].cpu / 2 && a.mem_res >= vm_infos[vm_str].mem / 2
                         && b.cpu_res >= vm_infos[vm_str].cpu / 2 && b.mem_res >= vm_infos[vm_str].mem / 2) {
                         fit_server_id = (*iter_s)->ID_;
-                        fit_server_node = -1;
+                        fit_server_node = 2;
 
                         if (s_id != (*iter_s)->ID_) {
                             judge = 1;
@@ -373,16 +372,10 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
             ++iter_v;
         }
     }
-    
-    b_temp = result.size();
 
     if (judge_pre == 0) {
         //从pre_server的服务器开始迁移
         for (auto iter_r_s = pre_server.rbegin(); mig_nums < max_nums && iter_r_s != pre_server.rend(); ++iter_r_s) {
-            //if ((*iter_r_s)->get_node('a').cpu_res < 3 && (*iter_r_s)->get_node('b').cpu_res < 3
-            //    || (*iter_r_s)->get_node('a').mem_res < 3 && (*iter_r_s)->get_node('b').mem_res < 3) {
-            //    continue;
-            //}
             
             list<int> iter_int;
             for (auto iter = (*iter_r_s)->own_vm.begin(); iter != (*iter_r_s)->own_vm.end(); ++iter) {
@@ -401,7 +394,7 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
                 int fit_server_node;
                 //找到合适的服务器插入
                 for (auto iter_s = post_server.begin(); iter_s != post_server.end(); ++iter_s) {
-                    if ((*iter_s)->ID_ == s_id && s_node == -1) {
+                    if ((*iter_s)->ID_ == s_id && s_node == 2) {
                         break;
                     }
                     Node a = (*iter_s)->get_node('a');
@@ -410,7 +403,7 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
                         if (a.cpu_res >= vm_infos[vm_str].cpu / 2 && a.mem_res >= vm_infos[vm_str].mem / 2
                             && b.cpu_res >= vm_infos[vm_str].cpu / 2 && b.mem_res >= vm_infos[vm_str].mem / 2) {
                             fit_server_id = (*iter_s)->ID_;
-                            fit_server_node = -1;
+                            fit_server_node = 2;
                             if (s_id != (*iter_s)->ID_) {
                                 judge = 1;
                             }
@@ -454,6 +447,5 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
             }
         }
     }
-    cout << result.size() - b_temp << endl;
     return result;
 }
