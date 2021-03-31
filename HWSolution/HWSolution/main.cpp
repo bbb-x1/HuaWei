@@ -54,143 +54,38 @@ bool mem_divide_cpu_cmp(pair<int, VM> p1, pair<int, VM>p2);
 void Caculator();
 
 int main(int argc, char **argv){
-
 	//初始化数据
-	int judge = InitializeData(server_infos, vm_infos, requests_set, kFilePath);
-	double mem_cpu_ratio = StatisticInfo(vm_infos, requests_set);
+	pair<int, int> day_data = InitializeData(server_infos, vm_infos, requests_set, kFilePath);
+	//
+	for (int day = 0; day<day_data.first; ++day) {
+		//
 
-	// 拿到虚拟机里最大的cpu和内存需求
-	int single_need_cpu = 0;
-	int single_need_mem = 0;
-	for (auto& it : vm_infos){
-		if (it.second.dual_node == 0) {
-			if (it.second.cpu > single_need_cpu){
-				single_need_cpu = it.second.cpu;
-			}
-			if (it.second.mem > single_need_mem) {
-				single_need_mem = it.second.mem;
-			}
-		}
-	}
-
-	// 要购买的服务器类型
-	string buy_server_type = SelectPurchaseServer(mem_cpu_ratio,server_infos, single_need_cpu, single_need_mem);
-	//每天的工作
-	int day = 0;  // 天数
-	for (auto it = requests_set.cbegin(); it != requests_set.cend(); ) {
-		it = requests_set.cbegin() + day;
-		day++;
-		// 所有需要购买新服务器的虚拟机，按mem/cpu的顺序排序
-		// 在one_day_create_vm中的下标，vm类指针
-		list<pair<int, VM>> mem_divide_cpu_sorted_vms;
-		// 每一天涉及新购买服务器的删除请求
-		vector<Request> res_del_requests_set;
-
-		// 购买服务器和部署虚拟机
-		// 当天购买的服务器，服务器类型->台数
-		unordered_map<string, int> one_day_purchase;
-		//当天迁移的虚拟机，虚拟机id
-		vector<pair<int, pair<int, int> > > one_day_migrate_vm;
-		// 当天部署的虚拟机，服务器id->节点
-		vector<pair<int, int>> one_day_create_vm;
-		int one_day_create_vm_index = 0;
-
-		cpu_sorted_server.sort(cpu_cmp);
+		unordered_map<string, int> one_day_purchase;			// 当天购买的服务器，服务器类型->台数
+		vector<pair<int, pair<int, int> > > one_day_migrate_vm;	//当天迁移的虚拟机，虚拟机id
+		vector<pair<int, int>> one_day_create_vm;				// 当天部署的虚拟机，服务器id->节点
 		//迁移虚拟机
+		cpu_sorted_server.sort(cpu_cmp);
 		one_day_migrate_vm = MigrateVM(vm_count, vm_infos, vm_runs, server_resources, server_runs, server_closes, cpu_sorted_server);
 		cpu_sorted_server.sort(cpu_cmp);
-
-		for (auto itv = it->cbegin(); itv != it->cend(); ++itv) {
-			if (itv->op_type == ADD) {
-				++vm_count;
-				// 创建要排序的虚拟机表mem_divide_cpu_sorted_vms
-				VM vm(itv->vm_id, itv->vm_type);
-				mem_divide_cpu_sorted_vms.push_back(make_pair(one_day_create_vm_index, vm));
-				// 初始化当天要创建的虚拟机表one_day_create_vm
-				one_day_create_vm.push_back(make_pair(-1, -1));
-				++one_day_create_vm_index;
-			}
-			else {
-				--vm_count;
-				res_del_requests_set.push_back(*itv);
-			}	
-		}
-		// 按mem除以cpu从大到小排序
-		mem_divide_cpu_sorted_vms.sort(mem_divide_cpu_cmp);
-		for (auto it = mem_divide_cpu_sorted_vms.begin(); it != mem_divide_cpu_sorted_vms.end(); ){
-			auto itr = mem_divide_cpu_sorted_vms.back();
-			// 先从头创建一个
-			//pair<int, int>create_vm_begin = CreateOneVM(it->second.vm_id_, it->second.vm_str_,
-			//	vm_infos, vm_runs, server_number-1, server_resources, server_runs, server_closes);
-			pair<int, int>create_vm_begin = CreateVM(it->second.vm_id_, it->second.vm_str_, vm_infos, 
-				vm_runs, server_resources, server_runs, server_closes, cpu_sorted_server);
-			while (create_vm_begin.second == -1) {
-				PurchaseServer(buy_server_type, server_number, server_infos, server_resources,
-					server_closes, cpu_sorted_server, BUYCOST, TOTALCOST);
-				// 在当天购买服务器字典里加入刚买的服务器
-				if (one_day_purchase.find(buy_server_type) == one_day_purchase.end()) {
-					one_day_purchase[buy_server_type] = 1;
-				}
-				else {
-					one_day_purchase[buy_server_type]++;
-				}
-				//create_vm_begin = CreateOneVM(it->second.vm_id_, it->second.vm_str_,
-				//	vm_infos, vm_runs, server_number - 1, server_resources, server_runs, server_closes);
-				create_vm_begin = CreateVM(it->second.vm_id_, it->second.vm_str_, vm_infos,
-					vm_runs, server_resources, server_runs, server_closes, cpu_sorted_server);
-			}
-			one_day_create_vm[it->first] = create_vm_begin;
-			if (it->second.vm_id_ == itr.second.vm_id_)
-				break;
-			// 再从尾创建一个
-			//pair<int, int>create_vm_end = CreateOneVM(itr.second.vm_id_, itr.second.vm_str_,
-			//	vm_infos, vm_runs, server_number - 1, server_resources, server_runs, server_closes);
-			pair<int, int>create_vm_end = CreateVM(itr.second.vm_id_, itr.second.vm_str_, vm_infos,
-				vm_runs, server_resources, server_runs, server_closes, cpu_sorted_server);
-			while (create_vm_end.second == -1) {
-				PurchaseServer(buy_server_type, server_number, server_infos, server_resources,
-					server_closes, cpu_sorted_server, BUYCOST, TOTALCOST);
-				// 在当天购买服务器字典里加入刚买的服务器
-				if (one_day_purchase.find(buy_server_type) == one_day_purchase.end()) {
-					one_day_purchase[buy_server_type] = 1;
-				}
-				else {
-					one_day_purchase[buy_server_type]++;
-				}
-				//create_vm_end = CreateOneVM(itr.second.vm_id_, itr.second.vm_str_,
-				//	vm_infos, vm_runs, server_number - 1, server_resources, server_runs, server_closes);
-				create_vm_end = CreateVM(itr.second.vm_id_, itr.second.vm_str_, vm_infos,
-					vm_runs, server_resources, server_runs, server_closes, cpu_sorted_server);
-			}
-			one_day_create_vm[itr.first] = create_vm_end;
-			// 迭代器向后走，把创建好的虚拟机从表中删除
-			it++;
-			mem_divide_cpu_sorted_vms.pop_front();
-			if (mem_divide_cpu_sorted_vms.size() == 0 || it->second.vm_id_ == itr.second.vm_id_)
-				break;
-			mem_divide_cpu_sorted_vms.pop_back();
-		}
-		// 最后执行删除操作
-		for (auto& it : res_del_requests_set)
-		{
-			vm_runs[it.vm_id].Del(vm_infos, vm_runs, server_resources,
-				server_runs, server_closes);
-		}
-
+		//部署虚拟机
+		DeployVm(vm_count, server_number, BUYCOST, TOTALCOST,
+			requests_set[day], one_day_purchase, one_day_create_vm, vm_infos, vm_runs, 
+			server_infos, server_resources, server_runs, server_closes, cpu_sorted_server);
+		////
 		//Caculator();
-		//// 输出
 		//cout << "总成本为:" << TOTALCOST << endl;
+		//cout << day << endl;
+		////
+		//输出
 		PrintPurchase(one_day_purchase);
 		PrintMigration(one_day_migrate_vm);
 		PrintDeploy(one_day_create_vm);
-
-		if (judge > 0) {
+		//读入未来数据
+		if (day_data.second > 0) {
 			Future(requests_set);
-			--judge;
+			--day_data.second;
 		}
 	}
-
-
 	return 0;
 }
 

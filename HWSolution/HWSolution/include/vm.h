@@ -3,6 +3,7 @@
 #include <string>
 #include <math.h>
 #include "server.h"
+#include "request.h"
 using namespace std;
 
 // 1条虚拟机基本信息
@@ -68,3 +69,20 @@ pair<int, int> CreateOneVM(int vm_id, string vm_str,
     unordered_map<int, Server>& server_resources,
     unordered_map<int, Server*>& server_runs,
     unordered_map<int, Server*>& server_closes);
+
+void DayCaculate(int& mem_max, int& cpu_max, double& mem_cpu_ratio,
+    unordered_map<int, Request*>& extra_need,
+    unordered_map<string, VMInfo>& vm_infos);
+
+void DeployVm(int& vm_count, int& server_number,
+    long long& BUYCOST, long long& TOTALCOST,
+    vector<Request>& day_requests,
+    unordered_map<string, int>& one_day_purchase,
+    vector<pair<int, int>>& one_day_create_vm,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
+    unordered_map<string, ServerInfo>& server_infos,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes,
+    list<Server*>& cpu_sorted_server);

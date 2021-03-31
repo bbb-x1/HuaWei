@@ -46,10 +46,13 @@ public:
 };
 
 void PurchaseServer(string& server_str, int& server_number,
+	long long& BUYCOST, long long& TOTALCOST,
 	unordered_map<string, ServerInfo>& server_infos,
 	unordered_map<int, Server>& server_resources,
 	unordered_map<int, Server*>& server_closes,
-	list<Server*>& cpu_sorted_server,
-	long long& BUYCOST, long long& TOTALCOST);
+	list<Server*>& cpu_sorted_server);
 
-string SelectPurchaseServer(double mem_cpu_ratio, unordered_map<string, ServerInfo> server_infos, int single_need_cpu, int single_need_mem);
+void SelectPurchaseServer(string &max_server_name,
+	int& single_need_mem, int& single_need_cpu,
+	double& mem_cpu_ratio,
+	unordered_map<string, ServerInfo>& server_infos);

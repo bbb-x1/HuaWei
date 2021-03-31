@@ -43,17 +43,16 @@ void PrintVMInfos(unordered_map<string, VMInfo>&vm_infos) {
 		"\t" << iter->second.dual_node<< endl;
 }
 
-int InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_map<string, VMInfo>& vm_infos,
+pair<int, int> InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_map<string, VMInfo>& vm_infos,
 	vector<vector<Request>>& requests_set, const string file_path)
 {
 	int server_num = 0;		//服务器数量
 	int vm_num = 0;			//虚拟机数量
 	int requests_times = 0; //请求天数
 	int item_num = 0;		//每天操作次数
-	FILE* stream1;
-	freopen_s(&stream1, file_path.c_str(), "rb", stdin);
+	//FILE* stream1;
+	//freopen_s(&stream1, file_path.c_str(), "rb", stdin);
 	char buf[1024];
-
 	//初始化服务器信息
 	cin.getline(buf, 1024);
 	server_num = atoi(buf);
@@ -136,7 +135,7 @@ int InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_ma
 		requests_set.push_back(queue_requests);
 	}
 
-	return requests_total - requests_times;
+	return make_pair(requests_total,requests_total - requests_times);
 }
 
 

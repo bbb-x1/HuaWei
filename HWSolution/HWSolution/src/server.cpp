@@ -1,7 +1,15 @@
 #include "../include/server.h"
 
 Server::Server() {
-
+	ID_ = -1;
+	a.cpu_res = - 1;
+	a.cpu_used = -1;
+	a.mem_res = -1;
+	a.mem_used = -1;
+	b.cpu_res = -1;
+	b.cpu_used = -1;
+	b.mem_res = -1;
+	b.mem_used = -1;
 }
 
 
@@ -105,11 +113,12 @@ Node Server::get_node(char node) {
 
 
 void PurchaseServer(string& server_str, int &server_number, 
+	long long& BUYCOST, long long& TOTALCOST,
 	unordered_map<string, ServerInfo> &server_infos, 
 	unordered_map<int, Server>& server_resources,
 	unordered_map<int, Server*>& server_closes,
-	list<Server*>& cpu_sorted_server,
-	long long& BUYCOST, long long& TOTALCOST) {
+	list<Server*>& cpu_sorted_server) 
+{
 	int sn = server_number;
 	Server purchased_server(server_str, sn, server_infos[server_str].cpu, server_infos[server_str].mem);
 	server_resources[sn] = purchased_server;
@@ -125,14 +134,15 @@ bool sort_compare(const pair<string, double>& item1, const pair<string, double>&
 }
 
 
-string SelectPurchaseServer(double mem_cpu_ratio, 
-	unordered_map<string, ServerInfo> server_infos, 
-	int single_need_cpu, int single_need_mem) {
+void SelectPurchaseServer(string& buy_server_type,
+	int& single_need_mem, int& single_need_cpu,
+	double& mem_cpu_ratio,
+	unordered_map<string, ServerInfo>& server_infos) {
 
 	mem_cpu_ratio += 0.10;
-	string max_server_name;
-	int sever_map_len = server_infos.size();
-	vector<pair<string, double>> ratio_array;
+
+	double min_cost = 999999999999999;
+	double temp_cost = 99999999999999999;
 	for (auto iter = server_infos.cbegin(); iter != server_infos.cend(); ++iter) {
 		//太小的服务器不考虑
 		if (iter->second.cpu < single_need_cpu * 2 || iter->second.mem < single_need_mem * 2) {
@@ -141,14 +151,20 @@ string SelectPurchaseServer(double mem_cpu_ratio,
 
 		if (  ( double(iter->second.mem) / double(iter->second.cpu) ) > mem_cpu_ratio ){
 			double actual_mem = double(iter->second.cpu) * mem_cpu_ratio;
-			ratio_array.push_back(make_pair(iter->first, double(iter->second.buy_cost) / (actual_mem + double(iter->second.cpu))));
+			temp_cost = double(iter->second.buy_cost) / ( actual_mem + double(iter->second.cpu) );
 		}
 		else {
 			double actual_cpu = double(iter->second.mem) / mem_cpu_ratio;
-			ratio_array.push_back(make_pair(iter->first, double(iter->second.buy_cost) / (actual_cpu + double(iter->second.mem))));
+			temp_cost = double(iter->second.buy_cost) / ( actual_cpu + double(iter->second.mem) );
+		}
+
+		if (temp_cost < min_cost) {
+			min_cost = temp_cost;
+			buy_server_type = iter->first;
 		}
 	}
-	sort(ratio_array.begin(),ratio_array.end(),sort_compare);
-
-	return ratio_array[0].first;
 }
+
+
+
+

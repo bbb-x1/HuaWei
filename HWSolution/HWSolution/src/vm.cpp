@@ -122,8 +122,7 @@ pair<int, int> CreateVM(int vm_id, string vm_str,
     unordered_map<int, Server*>& server_closes,
     list<Server*>& cpu_sorted_server) {
 
-    VM vm(vm_id, vm_str);
-    vm_runs[vm_id] = vm;
+
 
     int judge = 0;
     for (auto i = cpu_sorted_server.begin(); i != cpu_sorted_server.end(); ++i) {
@@ -132,6 +131,8 @@ pair<int, int> CreateVM(int vm_id, string vm_str,
         if (vm_infos[vm_str].dual_node == 1) {
             if (a.cpu_res >= vm_infos[vm_str].cpu / 2 && a.mem_res >= vm_infos[vm_str].mem / 2
                 && b.cpu_res >= vm_infos[vm_str].cpu / 2 && b.mem_res >= vm_infos[vm_str].mem / 2) {
+                VM vm(vm_id, vm_str);
+                vm_runs[vm_id] = vm;
                 vm_runs[vm_id].Add((*i)->ID_, 2, vm_infos, vm_runs, server_resources, server_runs, server_closes);
                 judge = 1;
                 // 2代表双节点虚拟机
@@ -140,12 +141,16 @@ pair<int, int> CreateVM(int vm_id, string vm_str,
         }
         else {
             if (a.cpu_res >= vm_infos[vm_str].cpu && a.mem_res >= vm_infos[vm_str].mem) {
+                VM vm(vm_id, vm_str);
+                vm_runs[vm_id] = vm;
                 vm_runs[vm_id].Add((*i)->ID_, 0, vm_infos, vm_runs, server_resources, server_runs, server_closes);
                 judge = 1;
                 // 0代表存放在A节点
                 return std::make_pair(vm_runs[vm_id].sv_id_, 0);
             }
             if (b.cpu_res >= vm_infos[vm_str].cpu && b.mem_res >= vm_infos[vm_str].mem) {
+                VM vm(vm_id, vm_str);
+                vm_runs[vm_id] = vm;
                 vm_runs[vm_id].Add((*i)->ID_, 1, vm_infos, vm_runs, server_resources, server_runs, server_closes);
                 judge = 1;
                 // 1代表存放在B节点
@@ -201,7 +206,7 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
         }
         ++iter_output;
         ++iter_temp;
-        if (iter_temp != iter_empty && path % 5== 0) {
+        if (iter_temp != iter_empty && path % 2== 0) {
             ++iter_temp;
         }
         ++path;
@@ -447,4 +452,121 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
         }
     }
     return result;
+}
+
+void DeployVm(int &vm_count,int& server_number,
+    long long& BUYCOST, long long& TOTALCOST,
+    vector<Request>& day_requests,
+    unordered_map<string, int>& one_day_purchase,
+    vector<pair<int, int>>& one_day_create_vm,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
+    unordered_map<string, ServerInfo>& server_infos,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes,
+    list<Server*>& cpu_sorted_server) 
+{
+    pair<int, int> judge_purchase;              // 判断是否需要买服务器
+    unordered_map<int, Request*> extra_add;     // 放在新服务器的add请求(顺序下标-请求)
+    unordered_map<int, Request*> extra_del_add; // 放在新服务器且删除的add请求
+    unordered_map<int, int> judge_del;          // 用于判断del里有没有今天add(vmid,index)
+    int add_index = 0;                          // one_day_create_vm数组的下标
+    //已有服务器上的部署
+    for (auto req = day_requests.begin(); req != day_requests.end(); ++req) {
+        //
+        if (req->op_type == ADD) {
+            ++vm_count;
+            judge_purchase = CreateVM(req->vm_id,req->vm_type,
+                vm_infos,vm_runs, server_resources, server_runs, server_closes, cpu_sorted_server);
+            if (judge_purchase.second == -1) {
+                extra_add[add_index] = &(*req);
+                judge_del[req->vm_id] = add_index;
+            }
+            one_day_create_vm.push_back(judge_purchase);
+            ++add_index;
+        }
+        else {
+            --vm_count;
+            auto add_del = judge_del.find(req->vm_id);
+            if (add_del != judge_del.end()) {//放在新服务器且删除的add请求
+                extra_del_add[ add_del->second ] = extra_add[ add_del->second ];
+                extra_add.erase( add_del->second );
+            }
+            else {
+                vm_runs[req->vm_id].Del(
+                    vm_infos, vm_runs, server_resources, server_runs, server_closes);
+            }
+        }
+    }
+    //
+    int mem_max = 0;
+    int cpu_max = 0;                // 虚拟机最大cpu和mem
+    double mem_cpu_ratio = 0;               // extra_need中mem/cpu
+    DayCaculate(mem_max, cpu_max, mem_cpu_ratio, extra_add, 
+        vm_infos);
+    string buy_server_type = " ";           // 要购买的服务器类型
+    SelectPurchaseServer(buy_server_type,mem_max, cpu_max, mem_cpu_ratio,
+        server_infos);
+    list<Server*> new_server;               //新服务器列表
+    //
+    //新服务器上的add
+    for (auto extra = extra_add.begin(); extra != extra_add.end(); ) {
+        //
+        judge_purchase = CreateVM(extra->second->vm_id, extra->second->vm_type,
+            vm_infos,vm_runs, server_resources, server_runs, server_closes, new_server);
+        //
+        if (judge_purchase.second == -1) {  //买服务器
+            PurchaseServer(buy_server_type,
+                server_number, BUYCOST, TOTALCOST,server_infos, server_resources,server_closes, cpu_sorted_server);
+            one_day_purchase[buy_server_type]++;
+            new_server.push_back(*cpu_sorted_server.rbegin());
+        }
+        else {                              //部署成功
+            one_day_create_vm[extra->first] = judge_purchase;
+            ++extra;
+        }
+    }
+    //新服务器上且删除的add
+    for (auto extra_da = extra_del_add.begin(); extra_da != extra_del_add.end(); ++extra_da) {
+        judge_purchase = CreateVM(extra_da->second->vm_id, extra_da->second->vm_type,
+            vm_infos, vm_runs, server_resources, server_runs, server_closes, cpu_sorted_server);
+        if (judge_purchase.second == -1) {  //买服务器
+            PurchaseServer(buy_server_type,
+                server_number, BUYCOST, TOTALCOST, server_infos, server_resources, server_closes, cpu_sorted_server);
+            one_day_purchase[buy_server_type]++;
+            new_server.push_back(*cpu_sorted_server.rbegin());
+        }
+        else {                              //部署成功
+            one_day_create_vm[extra_da->first] = judge_purchase;
+            ++extra_da;
+            vm_runs[extra_da->second->vm_id].Del(
+                vm_infos, vm_runs, server_resources, server_runs, server_closes);
+
+        }
+    }
+}
+
+//计算mem_max,cpu_max,mem_cpu_ratio
+void DayCaculate(int& mem_max, int& cpu_max, double& mem_cpu_ratio, 
+    unordered_map<int, Request*>& extra_need,
+    unordered_map<string, VMInfo>& vm_infos) {
+    double mem_total = 0;
+    double cpu_total = 0;
+    for (auto extra = extra_need.begin(); extra != extra_need.end(); ++extra) {
+
+        int mem_temp = vm_infos[extra->second->vm_type].mem;
+        int cpu_temp = vm_infos[extra->second->vm_type].cpu;
+
+        mem_total += double(mem_temp);
+        cpu_total += double(cpu_temp);
+
+        if (mem_temp > mem_max) {
+            mem_max = mem_temp;
+        }
+        if (cpu_temp > cpu_max) {
+            cpu_max = cpu_temp;
+        }
+    }
+    mem_cpu_ratio = mem_total / cpu_total;
 }
