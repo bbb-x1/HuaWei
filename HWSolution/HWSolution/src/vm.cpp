@@ -194,17 +194,17 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
 
     list<Server*> pre_server;
     list<Server*> post_server;
-    //int path = 0;
+    int path = 0;
     while (iter_temp != iter_empty) {
         if ((*iter_output)->get_node('a').mem_res != 0 || (*iter_output)->get_node('b').mem_res != 0) {
             pre_server.push_back(*iter_output);
         }
         ++iter_output;
         ++iter_temp;
-        if (iter_temp != iter_empty /*&& path % 2== 0*/) {
+        if (iter_temp != iter_empty && path % 5== 0) {
             ++iter_temp;
         }
-        //++path;
+        ++path;
     }
     for (auto iter = iter_output; iter != iter_empty; ++iter) {
         if ((*iter)->get_node('a').mem_res != 0 || (*iter)->get_node('b').mem_res != 0) {
@@ -216,7 +216,7 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
     list<pair<int, int> > vm_output;
     //³õÊ¼»¯vm_output
     iter_temp = iter_output;
-    int path = 0;
+    path = 0;
     while (iter_temp != iter_empty) {
         ++iter_output;
         ++iter_temp;
@@ -293,7 +293,6 @@ vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
         }
         else {
             judge_pre = 1;
-            cout << "************" << endl;
             break;
         }
 

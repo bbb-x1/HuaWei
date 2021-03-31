@@ -43,14 +43,13 @@ void PrintVMInfos(unordered_map<string, VMInfo>&vm_infos) {
 		"\t" << iter->second.dual_node<< endl;
 }
 
-void InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_map<string, VMInfo>& vm_infos,
+int InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_map<string, VMInfo>& vm_infos,
 	vector<vector<Request>>& requests_set, const string file_path)
 {
 	int server_num = 0;		//服务器数量
 	int vm_num = 0;			//虚拟机数量
 	int requests_times = 0; //请求天数
 	int item_num = 0;		//每天操作次数
-	ifstream ifs;
 	FILE* stream1;
 	freopen_s(&stream1, file_path.c_str(), "rb", stdin);
 	char buf[1024];
@@ -100,8 +99,12 @@ void InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_m
 
 	//初始化请求序列
 	cin.getline(buf, 1024);
+	sbuf = string(buf);
+	tokens = vector<string>{};
+	Split(sbuf, tokens, ", ");
 	vector<Request> queue_requests;
-	requests_times = atoi(buf);
+	requests_times = atoi(tokens[1].c_str());
+	int requests_total = atoi(tokens[0].c_str());
 	for (int i = 0; i < requests_times; i++)
 	{
 		cin.getline(buf, 1024);
@@ -132,6 +135,8 @@ void InitializeData(unordered_map<string, ServerInfo>& server_infos, unordered_m
 		}
 		requests_set.push_back(queue_requests);
 	}
+
+	return requests_total - requests_times;
 }
 
 
@@ -172,4 +177,45 @@ double StatisticInfo(unordered_map<string, VMInfo>& vm_infos, vector<vector<Requ
 	}
 
 	return double(mem_max)/cpu_max;
+}
+
+
+void Future(vector<vector<Request> >& requests_set) {
+	//每天操作次数
+	int item_num = 0;
+	vector<string> tokens;
+	string sbuf;
+	char buf[1024];
+	//初始化请求序列
+	vector<Request> queue_requests;
+	tokens = vector<string>{};
+	cin.getline(buf, 1024);
+	queue_requests = vector<Request>{};
+	item_num = atoi(buf);
+	for (int j = 0; j < item_num; j++)
+	{
+		Request r;
+		cin.getline(buf, 1024);
+		sbuf = string(buf);
+		sbuf = Trim(sbuf);
+		tokens = vector<string>{};
+		Split(sbuf, tokens, ", ");
+		if (tokens[0] == "add")
+		{
+			r.op_type = ADD;
+			r.vm_type = tokens[1];
+			r.vm_id = atoi(tokens[2].c_str());
+		}
+		else
+		{
+			r.op_type = DELETE;
+			r.vm_id = atoi(tokens[1].c_str());
+			r.vm_type = "NAN";
+		}
+		queue_requests.push_back(r);
+	}
+	if (!queue_requests.empty()) {
+		requests_set.push_back(queue_requests);
+	}
+
 }

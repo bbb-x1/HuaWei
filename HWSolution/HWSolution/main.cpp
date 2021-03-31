@@ -56,7 +56,7 @@ void Caculator();
 int main(int argc, char **argv){
 
 	//初始化数据
-	InitializeData(server_infos, vm_infos, requests_set, kFilePath);
+	int judge = InitializeData(server_infos, vm_infos, requests_set, kFilePath);
 	double mem_cpu_ratio = StatisticInfo(vm_infos, requests_set);
 
 	// 拿到虚拟机里最大的cpu和内存需求
@@ -77,7 +77,8 @@ int main(int argc, char **argv){
 	string buy_server_type = SelectPurchaseServer(mem_cpu_ratio,server_infos, single_need_cpu, single_need_mem);
 	//每天的工作
 	int day = 0;  // 天数
-	for (auto it = requests_set.cbegin(); it != requests_set.cend(); ++it) {
+	for (auto it = requests_set.cbegin(); it != requests_set.cend(); ) {
+		it = requests_set.cbegin() + day;
 		day++;
 		// 所有需要购买新服务器的虚拟机，按mem/cpu的顺序排序
 		// 在one_day_create_vm中的下标，vm类指针
@@ -182,7 +183,13 @@ int main(int argc, char **argv){
 		PrintPurchase(one_day_purchase);
 		PrintMigration(one_day_migrate_vm);
 		PrintDeploy(one_day_create_vm);
+
+		if (judge > 0) {
+			Future(requests_set);
+			--judge;
+		}
 	}
+
 
 	return 0;
 }
