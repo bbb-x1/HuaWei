@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <math.h>
+#include <cmath>
 #include "server.h"
 #include "request.h"
 using namespace std;
@@ -85,4 +86,91 @@ void DeployVm(int& vm_count, int& server_number,
     unordered_map<int, Server>& server_resources,
     unordered_map<int, Server*>& server_runs,
     unordered_map<int, Server*>& server_closes,
+    list<Server*>& cpu_sorted_server,
+    list<Server*>& cpu_mem_server);
+
+void DeployVmAdd(int& vm_count, int& server_number,
+    long long& BUYCOST, long long& TOTALCOST, int& actual_vm_count,
+    vector<Request>& day_requests,
+    list<pair<int, Request*> >& list_del,
+    unordered_map<string, int>& one_day_purchase,
+    vector<pair<int, int>>& one_day_create_vm,
+    vector<pair<int, pair<int, int> > >& one_day_migrate_vm,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
+    unordered_map<string, ServerInfo>& server_infos,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes,
+    list<Server*>& cpu_sorted_server,
+    int& max_cpu, int& max_mem, int& remain_day, pair<int, int>record,
+    string& buy_server_type);
+
+
+void DeployVmDel(int& vm_count, int& server_number,
+    long long& BUYCOST, long long& TOTALCOST, int& actual_vm_count,
+    list<pair<int, Request*> > list_add,
+    list<Request*> list_del,
+    unordered_map<string, int>& one_day_purchase,
+    vector<pair<int, int>>& one_day_create_vm,
+    vector<pair<int, pair<int, int> > > one_day_migrate_vm,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
+    unordered_map<string, ServerInfo>& server_infos,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes,
+    list<Server*>& cpu_sorted_server,
+    list<Server*>& full_server,
+    list<Server*>& cpu_mem_server,
+    list<Server*>& empty_server,
+    string& buy_server_type);
+
+pair<int, int> NewCreateVM(int vm_id, string vm_str,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes,
+    vector<Server*>& result_server,
+    int& length);
+
+pair<int, int> rCreateVM(int vm_id, string vm_str,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes,
     list<Server*>& cpu_sorted_server);
+
+
+void DeployVmFull(int& vm_count, int& server_number,
+    long long& BUYCOST, long long& TOTALCOST,
+    vector<Request>& day_requests,
+    unordered_map<string, int>& one_day_purchase,
+    vector<pair<int, int>>& one_day_create_vm,
+    int& remain_day,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
+    unordered_map<string, ServerInfo>& server_infos,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes,
+    list<Server*>& cpu_sorted_server);
+
+//pair<虚拟机id，pair<服务器id，服务器节点> >
+vector<pair<int, pair<int, int> > > MigrateVMFull(int vm_count,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes,
+    list<Server*>& sorted_server);
+
+vector<pair<int, pair<int, int> > > MigrateVMEmpty(int& vm_count,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes,
+    list<Server*>& sorted_server);
