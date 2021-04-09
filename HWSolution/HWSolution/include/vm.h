@@ -167,10 +167,22 @@ vector<pair<int, pair<int, int> > > MigrateVMFull(int vm_count,
     unordered_map<int, Server*>& server_closes,
     list<Server*>& sorted_server);
 
-vector<pair<int, pair<int, int> > > MigrateVMEmpty(int& vm_count,
+//pair<虚拟机id，pair<服务器id，服务器节点> >
+vector<pair<int, pair<int, int> > > MigrateVMEmpty(int vm_count,
     unordered_map<string, VMInfo>& vm_infos,
     unordered_map<int, VM>& vm_runs,
     unordered_map<int, Server>& server_resources,
     unordered_map<int, Server*>& server_runs,
     unordered_map<int, Server*>& server_closes,
-    list<Server*>& sorted_server);
+    list<Server*>& sorted_server,
+    vector<Request>& day_requests);
+
+//pair<虚拟机id，pair<服务器id，服务器节点> >
+vector<pair<int, pair<int, int> > > MigrateVMMiddle(int vm_count,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes,
+    list<Server*>& sorted_server,
+    vector<Request>& day_requests);

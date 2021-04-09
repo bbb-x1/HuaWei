@@ -92,10 +92,10 @@ pair<int, int> InitializeData(
 			}
 			queue_requests.push_back(r);
 		}
-		if (record_add / record_del > 2.0) {
+		if (record_add / record_del > 1.5) {
 			record.push_back(0);
 		}
-		else if (record_del / record_add > 2.0) {
+		else if (record_del / record_add > 1.5) {
 			record.push_back(2);
 		}
 		else {
@@ -142,10 +142,10 @@ void Future(vector<vector<Request> >& requests_set,
 		}
 		queue_requests.push_back(r);
 	}
-	if (record_add / record_del > 2.0) {
+	if (record_add / record_del > 1.5) {
 		record.push_back(0);
 	}
-	else if (record_del / record_add > 2.0) {
+	else if (record_del / record_add > 1.5) {
 		record.push_back(2);
 	}
 	else {

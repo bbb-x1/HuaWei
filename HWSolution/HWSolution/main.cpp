@@ -11,7 +11,7 @@
 
 using namespace std;
 
-const string kFilePath = "resource/training-1.txt";// 测试数据文件
+const string kFilePath = "resource/training-2.txt";// 测试数据文件
 
 unordered_map<string, ServerInfo> server_infos;// 服务器信息
 unordered_map<string, VMInfo> vm_infos;// 虚拟机信息
@@ -42,6 +42,9 @@ int main(int argc, char **argv){
 	pair<int, int> day_data = InitializeData(server_infos, vm_infos, requests_set, record, kFilePath);
 	FindMax(max_cpu, max_mem);
 	//
+	int add_plus = 0;
+	int del_plus = 0;
+	int middle_plus = 0;
 	for (int day = 0; day<day_data.first; ++day) {
 		//
 		unordered_map<string, int> one_day_purchase;			// 当天购买的服务器，服务器类型->台数
@@ -50,19 +53,30 @@ int main(int argc, char **argv){
 		//
 		int remain_day = day_data.first - day;
 		//
-		if (record[day] == 0) {
-			one_day_migrate_vm = MigrateVMFull(vm_count, vm_infos, vm_runs,
-				server_resources, server_runs, server_closes, cpu_sorted_server);
+		if (record[day] == 0) {//add 多
+			one_day_migrate_vm = MigrateVMMiddle(vm_count, vm_infos, vm_runs,
+				server_resources, server_runs, server_closes, cpu_sorted_server, requests_set[day]);
 			DeployVmFull(vm_count, server_number, BUYCOST, TOTALCOST,requests_set[day], 
 				one_day_purchase, one_day_create_vm, remain_day,
 				vm_infos, vm_runs,server_infos, server_resources, server_runs, server_closes, cpu_sorted_server);
+			++add_plus;
 		}
-		else{
-			one_day_migrate_vm = MigrateVMFull(vm_count, vm_infos, vm_runs,
-				server_resources, server_runs, server_closes, cpu_sorted_server);
+		else if(record[day] == 2){ //del多
+			one_day_migrate_vm = MigrateVMEmpty(vm_count, vm_infos, vm_runs,
+				server_resources, server_runs, server_closes, cpu_sorted_server, requests_set[day]);
 			DeployVmFull(vm_count, server_number, BUYCOST, TOTALCOST, requests_set[day],
 				one_day_purchase, one_day_create_vm, remain_day,
 				vm_infos, vm_runs, server_infos, server_resources, server_runs, server_closes, cpu_sorted_server);
+			++del_plus;
+		}
+		else {//相近
+			one_day_migrate_vm = MigrateVMMiddle(vm_count, vm_infos, vm_runs,
+				server_resources, server_runs, server_closes, cpu_sorted_server,requests_set[day]);
+			DeployVmFull(vm_count, server_number, BUYCOST, TOTALCOST, requests_set[day],
+				one_day_purchase, one_day_create_vm, remain_day,
+				vm_infos, vm_runs, server_infos, server_resources, server_runs, server_closes, cpu_sorted_server);
+			++middle_plus;
+
 		}
 		//int actual_vm_count = vm_count * 3 / 100;
 		////处理每日请求***************************************************************************
@@ -115,6 +129,9 @@ int main(int argc, char **argv){
 			--day_data.second;
 		}
 	}
+	cout << add_plus << endl;
+	cout << del_plus << endl;
+	cout << middle_plus << endl;
 	return 0;
 }
 
