@@ -3477,9 +3477,43 @@ void DeployVmMiddle(int& vm_count, int& server_number,
                 extra_del_add[add_del->second] = extra_add[add_del->second];
                 extra_add.erase(add_del->second);
             }
-            else {
+            else {// 不涉及新服务器的普通del
+                int sv_id = vm_runs[req->vm_id].sv_id_;
+                Server* del_server = &server_resources[sv_id];  // 要执行删除的服务器
+                // 判断删除前类型
+                int a_cpu_res = (*del_server).get_node('a').cpu_res;
+                int a_mem_res = (*del_server).get_node('a').mem_res;
+                int b_cpu_res = (*del_server).get_node('b').cpu_res;
+                int b_mem_res = (*del_server).get_node('b').mem_res;
+                if ((a_cpu_res == 0 || a_mem_res == 0) && (b_cpu_res == 0 || b_mem_res == 0)) {// FULL
+                    full_servers.remove(del_server);
+                }
+                else if (a_cpu_res < small_threshold && b_cpu_res < small_threshold) {// SMALL
+                    small_servers.remove(del_server);
+                }
+                else if (a_cpu_res > big_threshold || b_cpu_res > big_threshold) {// BIG
+                    big_servers.remove(del_server);
+                }
+                else {// MEDIUM
+                    medium_servers.remove(del_server);
+                }
+                // 执行删除
                 vm_runs[req->vm_id].Del(
                     vm_infos, vm_runs, server_resources, server_runs, server_closes);
+                // 判断删除后类型
+                a_cpu_res = (*del_server).get_node('a').cpu_res;
+                a_mem_res = (*del_server).get_node('a').mem_res;
+                b_cpu_res = (*del_server).get_node('b').cpu_res;
+                b_mem_res = (*del_server).get_node('b').mem_res;
+                if (a_cpu_res < small_threshold && b_cpu_res < small_threshold) {// SMALL
+                    small_servers.push_back(del_server);
+                }
+                else if (a_cpu_res > big_threshold || b_cpu_res > big_threshold) {// BIG
+                    big_servers.push_back(del_server);
+                }
+                else {// MEDIUM
+                    medium_servers.push_back(del_server);
+                }
             }
         }
     }

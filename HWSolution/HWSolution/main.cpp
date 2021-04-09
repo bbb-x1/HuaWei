@@ -11,7 +11,7 @@
 
 using namespace std;
 
-const string kFilePath = "resource/training-2.txt";// 测试数据文件
+const string kFilePath = "resource/training-1.txt";// 测试数据文件
 
 unordered_map<string, ServerInfo> server_infos;// 服务器信息
 unordered_map<string, VMInfo> vm_infos;// 虚拟机信息
@@ -56,7 +56,7 @@ int main(int argc, char **argv){
 		if (record[day] == 0) {//add 多
 			one_day_migrate_vm = MigrateVMMiddle(vm_count, vm_infos, vm_runs,
 				server_resources, server_runs, server_closes, cpu_sorted_server, requests_set[day]);
-			DeployVmFull(vm_count, server_number, BUYCOST, TOTALCOST,requests_set[day], 
+			DeployVmFull(vm_count, server_number, BUYCOST, TOTALCOST,requests_set[day],
 				one_day_purchase, one_day_create_vm, remain_day,
 				vm_infos, vm_runs,server_infos, server_resources, server_runs, server_closes, cpu_sorted_server);
 			++add_plus;
@@ -114,24 +114,24 @@ int main(int argc, char **argv){
 		//	});
 		//
 		////迁移***********************************************************************************************
-		////
-		//Caculator();
-		//cout << "总成本为:" << TOTALCOST << endl;
-		//cout << day << endl;
 		//
-		 //输出
-		 PrintPurchase(one_day_purchase);
-		 PrintMigration(one_day_migrate_vm);
-		 PrintDeploy(one_day_create_vm);
+		Caculator();
+		cout << "总成本为:" << TOTALCOST << endl;
+		cout << day << endl;
+		//
+		 ////输出
+		 //PrintPurchase(one_day_purchase);
+		 //PrintMigration(one_day_migrate_vm);
+		 //PrintDeploy(one_day_create_vm);
 		//读入未来数据
 		if (day_data.second > 0) {
 			Future(requests_set, record);
 			--day_data.second;
 		}
 	}
-	//cout << add_plus << endl;
-	//cout << del_plus << endl;
-	//cout << middle_plus << endl;
+	cout << add_plus << endl;
+	cout << del_plus << endl;
+	cout << middle_plus << endl;
 	return 0;
 }
 

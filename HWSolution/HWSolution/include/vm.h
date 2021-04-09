@@ -9,6 +9,7 @@ using namespace std;
 
 typedef enum VMTYPE
 {
+    FULL,
     SMALL,
     MEDIUM,
     BIG

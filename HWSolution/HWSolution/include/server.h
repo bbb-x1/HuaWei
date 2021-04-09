@@ -8,6 +8,7 @@
 #include <float.h>
 using namespace std;
 
+
 // 1条服务器基本信息
 typedef struct ServerInfo{
 	int cpu = 0;  // CPU核数
