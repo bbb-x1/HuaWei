@@ -3257,10 +3257,10 @@ void DeployVmMiddle(int& vm_count, int& server_number,
 {
     /*1. 服务器分类*/
     list<Server*> full_servers;  // 满
-    int small_threshold = 10;
-    list<Server*> small_servers;  // 两个节点cpu_res < 10
-    list<Server*> medium_servers;  // 10<cpu_res<100
-    int big_threshold = 80;
+    int small_threshold = 20;
+    list<Server*> small_servers;  // 两个节点cpu_res < 20
+    list<Server*> medium_servers;  // 20<cpu_res<100
+    int big_threshold = 100;
     list<Server*> big_servers;  // 100<cpu_res
 
     for (auto& sorted_it : cpu_sorted_server)

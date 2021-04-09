@@ -11,7 +11,7 @@
 
 using namespace std;
 
-const string kFilePath = "resource/training-1.txt";// 测试数据文件
+const string kFilePath = "resource/training-2.txt";// 测试数据文件
 
 unordered_map<string, ServerInfo> server_infos;// 服务器信息
 unordered_map<string, VMInfo> vm_infos;// 虚拟机信息
