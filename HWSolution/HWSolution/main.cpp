@@ -72,7 +72,7 @@ int main(int argc, char **argv){
 		else {//相近
 			one_day_migrate_vm = MigrateVMMiddle(vm_count, vm_infos, vm_runs,
 				server_resources, server_runs, server_closes, cpu_sorted_server,requests_set[day]);
-			DeployVmFull(vm_count, server_number, BUYCOST, TOTALCOST, requests_set[day],
+			DeployVmMiddle(vm_count, server_number, BUYCOST, TOTALCOST, requests_set[day],
 				one_day_purchase, one_day_create_vm, remain_day,
 				vm_infos, vm_runs, server_infos, server_resources, server_runs, server_closes, cpu_sorted_server);
 			++middle_plus;
@@ -115,23 +115,23 @@ int main(int argc, char **argv){
 		//
 		////迁移***********************************************************************************************
 		////
-		Caculator();
-		cout << "总成本为:" << TOTALCOST << endl;
-		cout << day << endl;
+		//Caculator();
+		//cout << "总成本为:" << TOTALCOST << endl;
+		//cout << day << endl;
 		//
-		// //输出
-		// PrintPurchase(one_day_purchase);
-		// PrintMigration(one_day_migrate_vm);
-		// PrintDeploy(one_day_create_vm);
+		 //输出
+		 PrintPurchase(one_day_purchase);
+		 PrintMigration(one_day_migrate_vm);
+		 PrintDeploy(one_day_create_vm);
 		//读入未来数据
 		if (day_data.second > 0) {
 			Future(requests_set, record);
 			--day_data.second;
 		}
 	}
-	cout << add_plus << endl;
-	cout << del_plus << endl;
-	cout << middle_plus << endl;
+	//cout << add_plus << endl;
+	//cout << del_plus << endl;
+	//cout << middle_plus << endl;
 	return 0;
 }
 

@@ -158,6 +158,51 @@ pair<int, int> CreateVM(int vm_id, string vm_str,
     return std::make_pair(-1, -1);
 }
 
+// 重载，从引用中返回插入的那台服务器的指针
+pair<int, int> CreateVM(int vm_id, string vm_str,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes,
+    list<Server*>& cpu_sorted_server,
+    Server*& deployed_server) {
+    for (auto i = cpu_sorted_server.begin(); i != cpu_sorted_server.end(); ++i) {
+        Node a = (*i)->get_node('a');
+        Node b = (*i)->get_node('b');
+        if (vm_infos[vm_str].dual_node == 1) {
+            if (a.cpu_res >= vm_infos[vm_str].cpu / 2 && a.mem_res >= vm_infos[vm_str].mem / 2
+                && b.cpu_res >= vm_infos[vm_str].cpu / 2 && b.mem_res >= vm_infos[vm_str].mem / 2) {
+                vm_runs[vm_id].vm_id_ = vm_id;
+                vm_runs[vm_id].vm_str_ = vm_str;
+                vm_runs[vm_id].Add((*i)->ID_, 2, vm_infos, vm_runs, server_resources, server_runs, server_closes);
+                deployed_server = *i;
+                // 2代表双节点虚拟机
+                return std::make_pair(vm_runs[vm_id].sv_id_, 2);
+            }
+        }
+        else {
+            if (a.cpu_res >= vm_infos[vm_str].cpu && a.mem_res >= vm_infos[vm_str].mem) {
+                vm_runs[vm_id].vm_id_ = vm_id;
+                vm_runs[vm_id].vm_str_ = vm_str;
+                vm_runs[vm_id].Add((*i)->ID_, 0, vm_infos, vm_runs, server_resources, server_runs, server_closes);
+                deployed_server = *i;
+                // 0代表存放在A节点
+                return std::make_pair(vm_runs[vm_id].sv_id_, 0);
+            }
+            if (b.cpu_res >= vm_infos[vm_str].cpu && b.mem_res >= vm_infos[vm_str].mem) {
+                vm_runs[vm_id].vm_id_ = vm_id;
+                vm_runs[vm_id].vm_str_ = vm_str;
+                vm_runs[vm_id].Add((*i)->ID_, 1, vm_infos, vm_runs, server_resources, server_runs, server_closes);
+                deployed_server = *i;
+                // 1代表存放在B节点
+                return std::make_pair(vm_runs[vm_id].sv_id_, 1);
+            }
+        }
+    }
+    return std::make_pair(-1, -1);
+}
+
 //pair<虚拟机id，pair<服务器id，服务器节点> >
 vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
     unordered_map<string, VMInfo>& vm_infos,
@@ -3193,4 +3238,296 @@ vector<pair<int, pair<int, int> > > MigrateVMMiddle(int vm_count,
     //}
 
     return result;
+}
+
+// 在Middle(add和del数量差不多)时的部署策略
+void DeployVmMiddle(int& vm_count, int& server_number,
+    long long& BUYCOST, long long& TOTALCOST,
+    vector<Request>& day_requests,
+    unordered_map<string, int>& one_day_purchase,
+    vector<pair<int, int>>& one_day_create_vm,
+    int& remain_day,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
+    unordered_map<string, ServerInfo>& server_infos,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes,
+    list<Server*>& cpu_sorted_server)
+{
+    /*1. 服务器分类*/
+    list<Server*> full_servers;  // 满
+    int small_threshold = 10;
+    list<Server*> small_servers;  // 两个节点cpu_res < 10
+    list<Server*> medium_servers;  // 10<cpu_res<100
+    int big_threshold = 80;
+    list<Server*> big_servers;  // 100<cpu_res
+
+    for (auto& sorted_it : cpu_sorted_server)
+    {
+        int a_cpu_res = sorted_it->get_node('a').cpu_res;
+        int a_mem_res = sorted_it->get_node('a').mem_res;
+        int b_cpu_res = sorted_it->get_node('b').cpu_res;
+        int b_mem_res = sorted_it->get_node('b').mem_res;
+        if ((a_cpu_res == 0 || a_mem_res == 0) && (b_cpu_res == 0 || b_mem_res == 0)) {
+            full_servers.push_back(&(*sorted_it));
+        }
+        else if (a_cpu_res < small_threshold && b_cpu_res < small_threshold) {
+            small_servers.push_back(&(*sorted_it));
+        }
+        else if (a_cpu_res > big_threshold || b_cpu_res > big_threshold) {
+            big_servers.push_back(&(*sorted_it));
+        }
+        else {
+            medium_servers.push_back(&(*sorted_it));
+        }
+    }
+
+    pair<int, int> judge_purchase;              // 判断是否需要买服务器
+    unordered_map<int, Request*> extra_add;     // 放在新服务器的add请求(顺序下标-请求)
+    unordered_map<int, Request*> extra_del_add; // 放在新服务器且删除的add请求
+    unordered_map<int, int> judge_del;          // 用于判断del里有没有今天add(vmid,index)
+    int add_index = 0;                          // one_day_create_vm数组的下标
+    //已有服务器上的部署
+    for (auto req = day_requests.begin(); req != day_requests.end(); ++req) {
+        /*2. 处理ADD，虚拟机分成3类*/
+        if (req->op_type == ADD) {
+            ++vm_count;
+            VMTYPE type;
+            if (vm_infos[req->vm_type].dual_node == 1) {
+                if (vm_infos[req->vm_type].cpu / 2 < small_threshold) type = SMALL;
+                else if (vm_infos[req->vm_type].cpu / 2 > big_threshold) type = BIG;
+                else type = MEDIUM;
+            }
+            else {
+                if (vm_infos[req->vm_type].cpu < small_threshold) type = SMALL;
+                else if (vm_infos[req->vm_type].cpu > big_threshold) type = BIG;
+                else type = MEDIUM;
+            }
+            /*3. 按照分类确定部署顺序*/
+            Server* deployed_server;  // 指向被部署的服务器
+            // SMALL虚拟机
+            if (type == SMALL) {
+                // 1查small_servers
+                judge_purchase = CreateVM(req->vm_id, req->vm_type,
+                    vm_infos, vm_runs, server_resources, server_runs, server_closes, small_servers, deployed_server);
+                if (judge_purchase.first != -1) {
+                    int a_cpu_res = server_resources[judge_purchase.first].get_node('a').cpu_res;
+                    int a_mem_res = server_resources[judge_purchase.first].get_node('a').mem_res;
+                    int b_cpu_res = server_resources[judge_purchase.first].get_node('b').cpu_res;
+                    int b_mem_res = server_resources[judge_purchase.first].get_node('b').mem_res;
+                    // small_servers能变满
+                    if ((a_cpu_res == 0 || a_mem_res == 0) && (b_cpu_res == 0 || b_mem_res == 0)) {
+                        small_servers.remove(deployed_server);
+                        full_servers.push_back(deployed_server);
+                    }
+                }
+                else {
+                    // 2查medium_servers
+                    judge_purchase = CreateVM(req->vm_id, req->vm_type,
+                        vm_infos, vm_runs, server_resources, server_runs, server_closes, medium_servers, deployed_server);
+                    if (judge_purchase.first != -1) {
+                        int a_cpu_res = server_resources[judge_purchase.first].get_node('a').cpu_res;
+                        int a_mem_res = server_resources[judge_purchase.first].get_node('a').mem_res;
+                        int b_cpu_res = server_resources[judge_purchase.first].get_node('b').cpu_res;
+                        int b_mem_res = server_resources[judge_purchase.first].get_node('b').mem_res;
+                        // medium_servers能变small
+                        if (a_cpu_res < small_threshold && b_cpu_res < small_threshold) {
+                            medium_servers.remove(deployed_server);
+                            small_servers.push_back(deployed_server);
+                        }
+                        // medium_servers能变full
+                        else if ((a_cpu_res == 0 || a_mem_res == 0) && (b_cpu_res == 0 || b_mem_res == 0)) {
+                            medium_servers.remove(deployed_server);
+                            full_servers.push_back(deployed_server);
+                        }
+                    }
+                    else {
+                        // 3查big_servers
+                        judge_purchase = CreateVM(req->vm_id, req->vm_type,
+                            vm_infos, vm_runs, server_resources, server_runs, server_closes, big_servers, deployed_server);
+                        if (judge_purchase.first != -1) {
+                            int a_cpu_res = server_resources[judge_purchase.first].get_node('a').cpu_res;
+                            int a_mem_res = server_resources[judge_purchase.first].get_node('a').mem_res;
+                            int b_cpu_res = server_resources[judge_purchase.first].get_node('b').cpu_res;
+                            int b_mem_res = server_resources[judge_purchase.first].get_node('b').mem_res;
+                            // big_servers能变medium
+                            if (small_threshold < a_cpu_res < big_threshold ||
+                                small_threshold < b_cpu_res < big_threshold) {
+                                big_servers.remove(deployed_server);
+                                medium_servers.push_back(deployed_server);
+                            }
+                            // big_servers能变small
+                            else if (a_cpu_res < small_threshold && b_cpu_res < small_threshold) {
+                                big_servers.remove(deployed_server);
+                                small_servers.push_back(deployed_server);
+                            }
+                            // big_servers能变full
+                            else if ((a_cpu_res == 0 || a_mem_res == 0) && (b_cpu_res == 0 || b_mem_res == 0)) {
+                                big_servers.remove(deployed_server);
+                                full_servers.push_back(deployed_server);
+                            }
+                        }
+                        else {
+                            // 确实装不下
+                            extra_add[add_index] = &(*req);
+                            judge_del[req->vm_id] = add_index;
+                        }
+                    }
+                }
+                one_day_create_vm.push_back(judge_purchase);
+                ++add_index;
+            }
+            else if (type == MEDIUM) {
+                // 1查medium_servers
+                judge_purchase = CreateVM(req->vm_id, req->vm_type,
+                    vm_infos, vm_runs, server_resources, server_runs, server_closes, medium_servers, deployed_server);
+                if (judge_purchase.first != -1) {
+                    int a_cpu_res = server_resources[judge_purchase.first].get_node('a').cpu_res;
+                    int a_mem_res = server_resources[judge_purchase.first].get_node('a').mem_res;
+                    int b_cpu_res = server_resources[judge_purchase.first].get_node('b').cpu_res;
+                    int b_mem_res = server_resources[judge_purchase.first].get_node('b').mem_res;
+                    // medium_servers能变small
+                    if (a_cpu_res < small_threshold && b_cpu_res < small_threshold) {
+                        medium_servers.remove(deployed_server);
+                        small_servers.push_back(deployed_server);
+                    }
+                    // medium_servers能变full
+                    else if ((a_cpu_res == 0 || a_mem_res == 0) && (b_cpu_res == 0 || b_mem_res == 0)) {
+                        medium_servers.remove(deployed_server);
+                        full_servers.push_back(deployed_server);
+                    }
+                }
+                else {
+                    // 2查big_servers
+                    judge_purchase = CreateVM(req->vm_id, req->vm_type,
+                        vm_infos, vm_runs, server_resources, server_runs, server_closes, big_servers, deployed_server);
+                    if (judge_purchase.first != -1) {
+                        int a_cpu_res = server_resources[judge_purchase.first].get_node('a').cpu_res;
+                        int a_mem_res = server_resources[judge_purchase.first].get_node('a').mem_res;
+                        int b_cpu_res = server_resources[judge_purchase.first].get_node('b').cpu_res;
+                        int b_mem_res = server_resources[judge_purchase.first].get_node('b').mem_res;
+                        // big_servers能变medium
+                        if (small_threshold < a_cpu_res < big_threshold ||
+                            small_threshold < b_cpu_res < big_threshold) {
+                            big_servers.remove(deployed_server);
+                            medium_servers.push_back(deployed_server);
+                        }
+                        // big_servers能变small
+                        else if (a_cpu_res < small_threshold && b_cpu_res < small_threshold) {
+                            big_servers.remove(deployed_server);
+                            small_servers.push_back(deployed_server);
+                        }
+                        // big_servers能变full
+                        else if ((a_cpu_res == 0 || a_mem_res == 0) && (b_cpu_res == 0 || b_mem_res == 0)) {
+                            big_servers.remove(deployed_server);
+                            full_servers.push_back(deployed_server);
+                        }
+                    }
+                    else {
+                        // 确实装不下
+                        extra_add[add_index] = &(*req);
+                        judge_del[req->vm_id] = add_index;
+                    }
+                }
+                one_day_create_vm.push_back(judge_purchase);
+                ++add_index;
+            }
+            // type == BIG
+            else {
+                // 1查big_servers
+                judge_purchase = CreateVM(req->vm_id, req->vm_type,
+                    vm_infos, vm_runs, server_resources, server_runs, server_closes, big_servers, deployed_server);
+                if (judge_purchase.first != -1) {
+                    int a_cpu_res = server_resources[judge_purchase.first].get_node('a').cpu_res;
+                    int a_mem_res = server_resources[judge_purchase.first].get_node('a').mem_res;
+                    int b_cpu_res = server_resources[judge_purchase.first].get_node('b').cpu_res;
+                    int b_mem_res = server_resources[judge_purchase.first].get_node('b').mem_res;
+                    // big_servers能变medium
+                    if (small_threshold < a_cpu_res < big_threshold ||
+                        small_threshold < b_cpu_res < big_threshold) {
+                        big_servers.remove(deployed_server);
+                        medium_servers.push_back(deployed_server);
+                    }
+                    // big_servers能变small
+                    else if (a_cpu_res < small_threshold && b_cpu_res < small_threshold) {
+                        big_servers.remove(deployed_server);
+                        small_servers.push_back(deployed_server);
+                    }
+                    // big_servers能变full
+                    else if ((a_cpu_res == 0 || a_mem_res == 0) && (b_cpu_res == 0 || b_mem_res == 0)) {
+                        big_servers.remove(deployed_server);
+                        full_servers.push_back(deployed_server);
+                    }
+                }
+                else {
+                    // 确实装不下
+                    extra_add[add_index] = &(*req);
+                    judge_del[req->vm_id] = add_index;
+                }
+                one_day_create_vm.push_back(judge_purchase);
+                ++add_index;
+            }
+        }
+        /*3. 处理DEL*/
+        else {
+            --vm_count;
+            auto add_del = judge_del.find(req->vm_id);
+            if (add_del != judge_del.end()) {//放在新服务器且删除的add请求
+                extra_del_add[add_del->second] = extra_add[add_del->second];
+                extra_add.erase(add_del->second);
+            }
+            else {
+                vm_runs[req->vm_id].Del(
+                    vm_infos, vm_runs, server_resources, server_runs, server_closes);
+            }
+        }
+    }
+    //
+    /*4. 处理新服务器上的ADD和DEL*/
+    int mem_max = 0;
+    int cpu_max = 0;                // 虚拟机最大cpu和mem
+    double mem_cpu_ratio = 0;               // extra_need中mem/cpu
+    DayCaculate(mem_max, cpu_max, mem_cpu_ratio, extra_add,
+        vm_infos);
+    string buy_server_type = " ";           // 要购买的服务器类型
+    SelectPurchaseServerNew(buy_server_type, mem_max, cpu_max, remain_day, mem_cpu_ratio,
+        server_infos);
+    list<Server*> new_server;               //新服务器列表
+    //
+    //新服务器上的add
+    for (auto extra = extra_add.begin(); extra != extra_add.end(); ) {
+        //
+        judge_purchase = CreateVM(extra->second->vm_id, extra->second->vm_type,
+            vm_infos, vm_runs, server_resources, server_runs, server_closes, new_server);
+        //
+        if (judge_purchase.second == -1) {  //买服务器
+            PurchaseServer(buy_server_type,
+                server_number, BUYCOST, TOTALCOST, server_infos, server_resources, server_closes, cpu_sorted_server);
+            one_day_purchase[buy_server_type]++;
+            new_server.push_back(*cpu_sorted_server.rbegin());
+        }
+        else {                              //部署成功
+            one_day_create_vm[extra->first] = judge_purchase;
+            ++extra;
+        }
+    }
+    //新服务器上且删除的add
+    for (auto extra_da = extra_del_add.begin(); extra_da != extra_del_add.end(); ++extra_da) {
+        judge_purchase = CreateVM(extra_da->second->vm_id, extra_da->second->vm_type,
+            vm_infos, vm_runs, server_resources, server_runs, server_closes, cpu_sorted_server);
+        if (judge_purchase.second == -1) {  //买服务器
+            PurchaseServer(buy_server_type,
+                server_number, BUYCOST, TOTALCOST, server_infos, server_resources, server_closes, cpu_sorted_server);
+            one_day_purchase[buy_server_type]++;
+            new_server.push_back(*cpu_sorted_server.rbegin());
+        }
+        else {                              //部署成功
+            one_day_create_vm[extra_da->first] = judge_purchase;
+            ++extra_da;
+            vm_runs[extra_da->second->vm_id].Del(
+                vm_infos, vm_runs, server_resources, server_runs, server_closes);
+
+        }
+    }
 }

@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <vector>
 #include <list>
+#include <float.h>
 using namespace std;
 
 // 1条服务器基本信息

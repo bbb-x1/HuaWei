@@ -7,6 +7,13 @@
 #include "request.h"
 using namespace std;
 
+typedef enum VMTYPE
+{
+    SMALL,
+    MEDIUM,
+    BIG
+}VMTYPE;
+
 // 1条虚拟机基本信息
 typedef struct VirtualMachineInfo {
     int cpu = 0;            //CPU核数
@@ -52,6 +59,17 @@ pair<int, int> CreateVM(int vm_id, string vm_str,
     unordered_map<int, Server*>& server_runs,
     unordered_map<int, Server*>& server_closes,
     list<Server*>& cpu_sorted_server);
+
+// 重载，从引用中返回插入的那台服务器的指针
+pair<int, int> CreateVM(int vm_id, string vm_str,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes,
+    list<Server*>& cpu_sorted_server,
+    Server*& deployed_server);
+
 
 vector<pair<int, pair<int, int> > > MigrateVM(int vm_count,
     unordered_map<string, VMInfo>& vm_infos,
@@ -186,3 +204,19 @@ vector<pair<int, pair<int, int> > > MigrateVMMiddle(int vm_count,
     unordered_map<int, Server*>& server_closes,
     list<Server*>& sorted_server,
     vector<Request>& day_requests);
+
+
+// 在Middle(add和del数量差不多)时的部署策略
+void DeployVmMiddle(int& vm_count, int& server_number,
+    long long& BUYCOST, long long& TOTALCOST,
+    vector<Request>& day_requests,
+    unordered_map<string, int>& one_day_purchase,
+    vector<pair<int, int>>& one_day_create_vm,
+    int& remain_day,
+    unordered_map<string, VMInfo>& vm_infos,
+    unordered_map<int, VM>& vm_runs,
+    unordered_map<string, ServerInfo>& server_infos,
+    unordered_map<int, Server>& server_resources,
+    unordered_map<int, Server*>& server_runs,
+    unordered_map<int, Server*>& server_closes,
+    list<Server*>& cpu_sorted_server);
