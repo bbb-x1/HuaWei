@@ -2893,8 +2893,8 @@ vector<pair<int, pair<int, int> > > MigrateVMMiddle(int vm_count,
     }
     //更新full_server
     while (sorted_iter != sorted_server.rend()) {
-        if (((*sorted_iter)->get_node('a').cpu_res == 0 || (*sorted_iter)->get_node('a').mem_res == 0) &&
-            ((*sorted_iter)->get_node('b').cpu_res == 0 || (*sorted_iter)->get_node('b').mem_res == 0)) {
+        if (((*sorted_iter)->get_node('a').cpu_res < 10 || (*sorted_iter)->get_node('a').mem_res < 10) &&
+            ((*sorted_iter)->get_node('b').cpu_res < 10 || (*sorted_iter)->get_node('b').mem_res < 10)) {
             full_server.push_front(*sorted_iter);
         }
         else {
@@ -2948,7 +2948,9 @@ vector<pair<int, pair<int, int> > > MigrateVMMiddle(int vm_count,
                 }
             }
         }
+
         //迁移A节点
+        int judge_finde_A = 0;
         if (judge_find == 0 && abs(a_cpu_res - a_mem_res) > 40) {
             double judge_dual = abs(log(a_cpu_res / a_mem_res));
             //虚拟机信息
@@ -2971,18 +2973,18 @@ vector<pair<int, pair<int, int> > > MigrateVMMiddle(int vm_count,
                     if (a.cpu_res >= vm_infos[vm_str].cpu && a.mem_res >= vm_infos[vm_str].mem) {
                         judge_id = (*iter_wait)->ID_;
                         judge_node = 0;
-                        judge_find = 1;
+                        judge_finde_A = 1;
                         break;
 
                     }
                     if (b.cpu_res >= vm_infos[vm_str].cpu && b.mem_res >= vm_infos[vm_str].mem) {
                         judge_id = (*iter_wait)->ID_;
                         judge_node = 1;
-                        judge_find = 1;
+                        judge_finde_A = 1;
                         break;
                     }
                 }
-                if (judge_find == 1) {
+                if (judge_finde_A == 1) {
                     //将虚拟机从服务器中去除
                     vm_runs[vm_id].Del(vm_infos, vm_runs, server_resources, server_runs, server_closes);
                     vm_runs[vm_id].vm_id_ = vm_id;
@@ -3157,8 +3159,8 @@ vector<pair<int, pair<int, int> > > MigrateVMMiddle(int vm_count,
             vm_runs[vm_id].Add(judge_id, judge_node, vm_infos, vm_runs, server_resources, server_runs, server_closes);
             --max_nums;
             result.push_back(make_pair(vm_id, make_pair(judge_id, judge_node)));
-            if (((*iter_s)->get_node('a').cpu_res == 0 || (*iter_s)->get_node('a').mem_res == 0)
-                && ((*iter_s)->get_node('b').cpu_res == 0 || (*iter_s)->get_node('b').mem_res == 0)) {
+            if (((*iter_s)->get_node('a').cpu_res < 10 || (*iter_s)->get_node('a').mem_res < 10)
+                && ((*iter_s)->get_node('b').cpu_res < 10 || (*iter_s)->get_node('b').mem_res < 10)) {
                 wait_server.erase(iter_s);
             }
         }
@@ -3239,6 +3241,7 @@ vector<pair<int, pair<int, int> > > MigrateVMMiddle(int vm_count,
 
     return result;
 }
+
 
 // 在Middle(add和del数量差不多)时的部署策略
 void DeployVmMiddle(int& vm_count, int& server_number,

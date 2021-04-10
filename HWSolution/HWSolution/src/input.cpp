@@ -14,8 +14,8 @@ pair<int, int> InitializeData(
 	vector<int>& record,
 	const string file_path)
 {
-	FILE* stream1;
-	freopen_s(&stream1, file_path.c_str(), "rb", stdin);
+	//FILE* stream1;
+	//freopen_s(&stream1, file_path.c_str(), "rb", stdin);
 	
 	char buf[1024];
 	//初始化服务器信息
@@ -28,7 +28,7 @@ pair<int, int> InitializeData(
 		int index = 0;
 		while (buf[index] != ',') ++index;
 		string temp_name = string(buf + 1, buf + index);
-		sscanf_s(buf + index + 1, " %d, %d, %d, %d",
+		sscanf(buf + index + 1, " %d, %d, %d, %d",
 			&server_infos[temp_name].cpu,
 			&server_infos[temp_name].mem,
 			&server_infos[temp_name].buy_cost,
@@ -44,7 +44,7 @@ pair<int, int> InitializeData(
 		int index = 0;
 		while (buf[index] != ',') ++index;
 		string temp_name = string(buf + 1, buf + index);
-		sscanf_s(buf + index + 1, " %d, %d, %d",
+		sscanf(buf + index + 1, " %d, %d, %d",
 			&vm_infos[temp_name].cpu,
 			&vm_infos[temp_name].mem,
 			&vm_infos[temp_name].dual_node);
@@ -58,7 +58,7 @@ pair<int, int> InitializeData(
 	int requests_times;
 	int requests_total;
 
-	sscanf_s(buf, "%d %d", &requests_total, &requests_times);
+	sscanf(buf, "%d %d", &requests_total, &requests_times);
 
 
 	for (int i = 0; i < requests_times; i++)
@@ -80,13 +80,13 @@ pair<int, int> InitializeData(
 				int index = 6;
 				while (buf[index] != ',') ++index;
 				r.vm_type = string(buf + 6, buf + index);
-				sscanf_s(buf + index + 1, " %d", &r.vm_id);
+				sscanf(buf + index + 1, " %d", &r.vm_id);
 				++record_add;
 			}
 			else
 			{
 				r.op_type = DELETE;
-				sscanf_s(buf + 5, " %d", &r.vm_id);
+				sscanf(buf + 5, " %d", &r.vm_id);
 				r.vm_type = "NAN";
 				++record_del;
 
@@ -131,13 +131,13 @@ void Future(vector<vector<Request> >& requests_set,
 			int index = 6;
 			while (buf[index] != ',') ++index;
 			r.vm_type = string(buf + 6, buf + index);
-			sscanf_s(buf + index + 1, " %d", &r.vm_id);
+			sscanf(buf + index + 1, " %d", &r.vm_id);
 			++record_add;
 		}
 		else
 		{
 			r.op_type = DELETE;
-			sscanf_s(buf + 5, " %d", &r.vm_id);
+			sscanf(buf + 5, " %d", &r.vm_id);
 			r.vm_type = "NAN";
 			++record_del;
 		}
